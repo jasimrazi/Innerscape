@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 
+import 'package:provider/provider.dart';
+import 'providers/journal_provider.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
@@ -11,7 +14,12 @@ void main() {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
-  runApp(const InnerscapeApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => JournalProvider(),
+      child: const InnerscapeApp(),
+    ),
+  );
 }
 
 class InnerscapeApp extends StatelessWidget {

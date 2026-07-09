@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-
 import '../theme/app_theme.dart';
 import '../widgets/aura_ring.dart';
 import '../widgets/glass_card.dart';
+import 'package:provider/provider.dart';
+import '../providers/journal_provider.dart';
 
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<JournalProvider>();
     return Scaffold(
       backgroundColor: InnerscapeColors.cream,
       body: SafeArea(
@@ -40,7 +42,7 @@ class InsightsScreen extends StatelessWidget {
                       const AuraRing(size: AuraRingSize.md),
                       const SizedBox(height: 14),
                       Text(
-                        '12',
+                        '${provider.streak}',
                         style: InnerscapeText.heading(size: 28),
                       ),
                       const SizedBox(height: 2),
@@ -59,7 +61,7 @@ class InsightsScreen extends StatelessWidget {
                       child: GlassCard(
                         child: Column(
                           children: [
-                            Text('31',
+                            Text('${provider.longestStreak}',
                                 style: InnerscapeText.heading(size: 22)),
                             const SizedBox(height: 4),
                             Text('Longest streak',
@@ -73,7 +75,7 @@ class InsightsScreen extends StatelessWidget {
                       child: GlassCard(
                         child: Column(
                           children: [
-                            Text('146',
+                            Text('${provider.totalEntries}',
                                 style: InnerscapeText.heading(size: 22)),
                             const SizedBox(height: 4),
                             Text('Total entries',

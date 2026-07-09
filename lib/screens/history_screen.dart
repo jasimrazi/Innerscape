@@ -4,11 +4,17 @@ import '../widgets/aura_ring.dart';
 import '../models/journal_entry.dart';
 import 'detail_screen.dart';
 
+import 'package:provider/provider.dart';
+import '../providers/journal_provider.dart';
+
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<JournalProvider>();
+    final entriesList = provider.entries;
+
     return Scaffold(
       backgroundColor: InnerscapeColors.cream,
       body: SafeArea(
@@ -29,7 +35,7 @@ class HistoryScreen extends StatelessWidget {
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.fromLTRB(14, 6, 14, 20),
-                itemCount: kSampleEntries.length,
+                itemCount: entriesList.length,
                 separatorBuilder: (_, _) => const Divider(
                   height: 1,
                   thickness: 1,
@@ -38,7 +44,7 @@ class HistoryScreen extends StatelessWidget {
                   endIndent: 14,
                 ),
                 itemBuilder: (context, i) {
-                  final entry = kSampleEntries[i];
+                  final entry = entriesList[i];
                   return _EntryRow(
                     entry: entry,
                     onTap: () => Navigator.of(context).push(

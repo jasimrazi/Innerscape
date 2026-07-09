@@ -6,15 +6,11 @@ import 'history_screen.dart';
 import 'insights_screen.dart';
 import 'settings_screen.dart';
 
-class MainShell extends StatefulWidget {
+import 'package:provider/provider.dart';
+import '../providers/journal_provider.dart';
+
+class MainShell extends StatelessWidget {
   const MainShell({super.key});
-
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
 
   static const _screens = [
     TodayScreen(),
@@ -25,14 +21,15 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<JournalProvider>();
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: provider.currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: _InnerscapeTabBar(
-        currentIndex: _currentIndex,
-        onTap: (i) => setState(() => _currentIndex = i),
+        currentIndex: provider.currentIndex,
+        onTap: (i) => provider.setTab(i),
       ),
     );
   }

@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../providers/journal_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool _lightMode = true;
-  bool _remindersOn = true;
-
-  @override
   Widget build(BuildContext context) {
+    final provider = context.watch<JournalProvider>();
     return Scaffold(
       backgroundColor: InnerscapeColors.cream,
       body: SafeArea(
@@ -61,16 +56,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _SettingsRow(
                       label: 'Reminders',
                       trailing: _Toggle(
-                        value: _remindersOn,
-                        onChanged: (v) => setState(() => _remindersOn = v),
+                        value: provider.remindersOn,
+                        onChanged: (v) => provider.setRemindersOn(v),
                       ),
                     ),
                     const _Divider(),
                     _SettingsRow(
                       label: 'Appearance — Light',
                       trailing: _Toggle(
-                        value: _lightMode,
-                        onChanged: (v) => setState(() => _lightMode = v),
+                        value: provider.lightMode,
+                        onChanged: (v) => provider.setLightMode(v),
                       ),
                     ),
                     const _Divider(),

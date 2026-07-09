@@ -1,9 +1,10 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/aura_ring.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/mood_slider.dart';
+import '../providers/journal_provider.dart';
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -16,17 +17,7 @@ class _TodayScreenState extends State<TodayScreen>
     with SingleTickerProviderStateMixin {
   final _winCtrl = TextEditingController();
   final _goalCtrl = TextEditingController();
-  double _moodValue = 0.5;
-  double _ringHue = 0;
   bool _showToast = false;
-
-  static const _captions = [
-    'Take a breath before you write.',
-    'Saved. Let it rest for tonight.',
-    'One true thing, kept.',
-    'Written and set down gently.',
-  ];
-  String _caption = _captions[0];
 
   late final AnimationController _toastCtrl;
   late final Animation<double> _toastAnim;
@@ -51,10 +42,13 @@ class _TodayScreenState extends State<TodayScreen>
 
   void _save() {
     FocusScope.of(context).unfocus();
-    final rng = math.Random();
+    final provider = context.read<JournalProvider>();
+    provider.saveEntry(_winCtrl.text, _goalCtrl.text);
+    _winCtrl.clear();
+    _goalCtrl.clear();
+    provider.setMoodValue(0.5);
+
     setState(() {
-      _ringHue = rng.nextDouble() * 60 - 30;
-      _caption = _captions[1 + rng.nextInt(_captions.length - 1)];
       _showToast = true;
     });
     _toastCtrl.forward();
@@ -69,6 +63,7 @@ class _TodayScreenState extends State<TodayScreen>
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<JournalProvider>();
     return Scaffold(
       backgroundColor: InnerscapeColors.cream,
       body: Container(
@@ -124,7 +119,7 @@ class _TodayScreenState extends State<TodayScreen>
                                 const AuraRing(size: AuraRingSize.xs),
                                 const SizedBox(width: 6),
                                 Text(
-                                  '12 days',
+                                  '${provider.streak} days',
                                   style: InnerscapeText.body(
                                     size: 12.5,
                                     weight: FontWeight.w600,
@@ -148,7 +143,7 @@ class _TodayScreenState extends State<TodayScreen>
                           curve: Curves.easeInOut,
                           child: AuraRing(
                             size: AuraRingSize.lg,
-                            hueShift: _ringHue,
+                            hueShift: provider.ringHue,
                           ),
                         ),
                       ),
@@ -163,8 +158,8 @@ class _TodayScreenState extends State<TodayScreen>
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 400),
                           child: Text(
-                            _caption,
-                            key: ValueKey(_caption),
+                            provider.caption,
+                            key: ValueKey(provider.caption),
                             style: InnerscapeText.serifItalic(
                               size: 13.5,
                               color: InnerscapeColors.mauve,
@@ -180,8 +175,8 @@ class _TodayScreenState extends State<TodayScreen>
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(22, 0, 22, 16),
                       child: MoodSlider(
-                        value: _moodValue,
-                        onChanged: (v) => setState(() => _moodValue = v),
+                        value: provider.moodValue,
+                        onChanged: (v) => provider.setMoodValue(v),
                       ),
                     ),
                   ),
@@ -209,7 +204,7 @@ class _TodayScreenState extends State<TodayScreen>
                                 hintText: 'What went right today?',
                                 hintStyle: InnerscapeText.serifItalic(
                                   size: 16.5,
-                                  color: const Color(0xFFB3A6C2),
+                                  color: InnerscapeColors.hint,
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
@@ -243,7 +238,7 @@ class _TodayScreenState extends State<TodayScreen>
                                 hintText: "What's worth showing up for?",
                                 hintStyle: InnerscapeText.serifItalic(
                                   size: 16.5,
-                                  color: const Color(0xFFB3A6C2),
+                                  color: InnerscapeColors.hint,
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
