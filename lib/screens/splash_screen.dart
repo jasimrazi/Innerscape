@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'onboarding_screen.dart';
+import 'main_shell.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -37,8 +37,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animCtrl.forward();
 
-    // Transition to onboarding after animations complete + a small rest period
-    Future.delayed(const Duration(milliseconds: 2300), _navigateToOnboarding);
+    // Transition to main shell after animations complete + a small rest period
+    Future.delayed(const Duration(milliseconds: 2300), _navigateToHome);
   }
 
   @override
@@ -47,11 +47,11 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
-  void _navigateToOnboarding() {
+  void _navigateToHome() {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (_, _, _) => const OnboardingScreen(),
+        pageBuilder: (_, _, _) => const MainShell(),
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: const Duration(milliseconds: 600),
