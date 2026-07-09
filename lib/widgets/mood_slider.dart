@@ -1,9 +1,10 @@
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
+import 'glass_card.dart';
 
-/// A horizontal glassmorphic mood slider with emoji markers and a soft amber
-/// glow tracking the thumb. Mimics the design brief's "Slide to reflect" element.
+/// A peaceful mood slider where the emojis sit on the track and the selected
+/// one becomes the thumb — highlighted with a soft glowing ring.
 class MoodSlider extends StatefulWidget {
   final double value; // 0.0 – 1.0
   final ValueChanged<double> onChanged;
@@ -19,138 +20,189 @@ class MoodSlider extends StatefulWidget {
 }
 
 class _MoodSliderState extends State<MoodSlider> {
-  // Emoji markers spaced evenly along the track
-  static const _markers = ['😔', '😐', '😌', '😊', '✨'];
-  static const _labels = ['Drained', 'Mellow', 'Calm & Centered', 'Energised', 'Radiant'];
+  static const _moods = [
+    ('😔', 'Drained'),
+    ('😐', 'Mellow'),
+    ('😌', 'Calm'),
+    ('😊', 'Bright'),
+    ('✨', 'Radiant'),
+  ];
 
-  String get _currentLabel {
-    final idx = (widget.value * (_labels.length - 1)).round();
-    return _labels[idx.clamp(0, _labels.length - 1)];
+  static const int _steps = 4; // _moods.length - 1
+
+  int _lastHapticStep = -1;
+
+  int get _selectedIndex =>
+      (widget.value * _steps).round().clamp(0, _steps);
+
+  void _onDrag(double localDx, double trackW, double pad) {
+    final raw = (localDx - pad) / trackW;
+    final clamped = raw.clamp(0.0, 1.0);
+
+    final nearestStep = (clamped * _steps).round();
+    if (nearestStep != _lastHapticStep) {
+      _lastHapticStep = nearestStep;
+      HapticFeedback.selectionClick();
+    }
+
+    // Snap to nearest step while dragging for a clean feel
+    widget.onChanged(nearestStep / _steps);
+  }
+
+  void _onDragEnd() {
+    _lastHapticStep = -1;
   }
 
   @override
   Widget build(BuildContext context) {
+    final int sel = _selectedIndex;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Prompt text
         Text(
-          'Slide to reflect: How was your energy today?',
-          style: InnerscapeText.bodyInter(
+          'How did today feel?',
+          style: InnerscapeText.body(
             size: 12.5,
             color: InnerscapeColors.mauve,
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
 
-        // Glass slider container
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              height: 72,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.55),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.70),
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x145A4678),
-                    blurRadius: 30,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Amber glow under thumb
-                  Positioned(
-                    left: widget.value * (MediaQuery.of(context).size.width - 80) -
-                        24,
-                    child: Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            const Color(0xFFF6C39A).withValues(alpha: 0.55),
-                            Colors.transparent,
-                          ],
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 20),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final double W = constraints.maxWidth;
+              const double pad = 28.0;
+              final double trackW = W - pad * 2;
+
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onHorizontalDragStart: (d) =>
+                    _onDrag(d.localPosition.dx, trackW, pad),
+                onHorizontalDragUpdate: (d) =>
+                    _onDrag(d.localPosition.dx, trackW, pad),
+                onHorizontalDragEnd: (_) => _onDragEnd(),
+                onTapDown: (d) {
+                  _onDrag(d.localPosition.dx, trackW, pad);
+                },
+                child: SizedBox(
+                  height: 52,
+                  width: W,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // ── Track line ─────────────────────────────────
+                      Positioned(
+                        left: pad,
+                        right: pad,
+                        top: 24,
+                        height: 4,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: InnerscapeColors.line,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  // Emoji markers row
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: _markers
-                          .asMap()
-                          .entries
-                          .map((e) => Text(
-                                e.value,
-                                style: TextStyle(
-                                  fontSize: widget.value >=
-                                          (e.key / (_markers.length - 1)) - 0.05 &&
-                                      widget.value <=
-                                          (e.key / (_markers.length - 1)) + 0.05
-                                      ? 26
-                                      : 18,
+                      // ── Active track fill ──────────────────────────
+                      Positioned(
+                        left: pad,
+                        width: (sel / _steps) * trackW,
+                        top: 24,
+                        height: 4,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOutCubic,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2),
+                            gradient: const LinearGradient(
+                              colors: [
+                                InnerscapeColors.peachSoft,
+                                InnerscapeColors.violet,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // ── Sliding highlight ring (behind selected emoji) ─
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                        left: pad + (sel / _steps) * trackW - 26,
+                        top: 0,
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: InnerscapeColors.violetSoft
+                                .withValues(alpha: 0.55),
+                            border: Border.all(
+                              color: InnerscapeColors.violet
+                                  .withValues(alpha: 0.3),
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: InnerscapeColors.violet
+                                    .withValues(alpha: 0.12),
+                                blurRadius: 16,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // ── Emoji markers on track ─────────────────────
+                      ...List.generate(_moods.length, (i) {
+                        final double cx = pad + (i / _steps) * trackW;
+                        final bool isSelected = i == sel;
+
+                        return Positioned(
+                          left: cx - 22,
+                          width: 44,
+                          top: 0,
+                          height: 52,
+                          child: Center(
+                            child: AnimatedScale(
+                              scale: isSelected ? 1.2 : 0.85,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOutCubic,
+                              child: AnimatedOpacity(
+                                opacity: isSelected ? 1.0 : 0.45,
+                                duration: const Duration(milliseconds: 300),
+                                child: Text(
+                                  _moods[i].$1,
+                                  style: const TextStyle(fontSize: 24),
                                 ),
-                              ))
-                          .toList(),
-                    ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
                   ),
-
-                  // Invisible slider gesture layer
-                  Positioned.fill(
-                    child: SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 0,
-                        thumbShape: const RoundSliderThumbShape(
-                          enabledThumbRadius: 14,
-                          elevation: 6,
-                        ),
-                        thumbColor: Colors.white,
-                        overlayColor: const Color(0x20F6C39A),
-                        activeTrackColor: Colors.transparent,
-                        inactiveTrackColor: Colors.transparent,
-                        overlayShape: const RoundSliderOverlayShape(
-                          overlayRadius: 22,
-                        ),
-                      ),
-                      child: Slider(
-                        value: widget.value,
-                        onChanged: widget.onChanged,
-                        min: 0,
-                        max: 1,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
 
         const SizedBox(height: 10),
 
-        // Descriptive label
         Center(
           child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
+            duration: const Duration(milliseconds: 300),
             child: Text(
-              _currentLabel,
-              key: ValueKey(_currentLabel),
+              _moods[sel].$2,
+              key: ValueKey(sel),
               style: InnerscapeText.serifItalic(
-                size: 14,
+                size: 14.5,
                 color: InnerscapeColors.inkSoft,
               ),
             ),
