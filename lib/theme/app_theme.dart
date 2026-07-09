@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // ── Color Tokens ──────────────────────────────────────────────────────────────
 class InnerscapeColors {
@@ -20,46 +19,56 @@ class InnerscapeColors {
 
 // ── Text Styles ───────────────────────────────────────────────────────────────
 class InnerscapeText {
-  static TextStyle eyebrow({Color? color}) => GoogleFonts.inter(
+  static TextStyle eyebrow({Color? color}) => const TextStyle(
+        fontFamily: 'BricolageGrotesque',
         fontSize: 10.5,
-        letterSpacing: 0.13 * 10.5,
+        letterSpacing: 0.15 * 10.5,
         fontWeight: FontWeight.w600,
-        color: color ?? InnerscapeColors.mauve,
+        color: InnerscapeColors.mauve,
       );
 
-  static TextStyle heading({double size = 22, Color? color}) =>
-      GoogleFonts.fraunces(
+  static TextStyle heading({double size = 22, Color? color}) => TextStyle(
+        fontFamily: 'InstrumentSerif',
         fontSize: size,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w400,
         color: color ?? InnerscapeColors.ink,
       );
 
-  static TextStyle headingItalic({double size = 30, Color? color}) =>
-      GoogleFonts.fraunces(
+  static TextStyle headingItalic({double size = 30, Color? color}) => TextStyle(
+        fontFamily: 'InstrumentSerif',
         fontSize: size,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w400,
         fontStyle: FontStyle.italic,
         color: color ?? InnerscapeColors.ink,
       );
 
-  static TextStyle serifItalic({double size = 16, Color? color}) =>
-      GoogleFonts.newsreader(
+  static TextStyle serifItalic({double size = 16, Color? color}) => TextStyle(
+        fontFamily: 'InstrumentSerif',
         fontSize: size,
         fontStyle: FontStyle.italic,
         fontWeight: FontWeight.w400,
         color: color ?? InnerscapeColors.inkSoft,
       );
 
+  static TextStyle body({
+    double size = 13,
+    FontWeight weight = FontWeight.w400,
+    Color? color,
+  }) =>
+      TextStyle(
+        fontFamily: 'BricolageGrotesque',
+        fontSize: size,
+        fontWeight: weight,
+        color: color ?? InnerscapeColors.ink,
+      );
+
+  @Deprecated('Use body instead')
   static TextStyle bodyInter({
     double size = 13,
     FontWeight weight = FontWeight.w400,
     Color? color,
   }) =>
-      GoogleFonts.inter(
-        fontSize: size,
-        fontWeight: weight,
-        color: color ?? InnerscapeColors.ink,
-      );
+      body(size: size, weight: weight, color: color);
 }
 
 // ── App Theme ─────────────────────────────────────────────────────────────────
@@ -72,7 +81,7 @@ class InnerscapeTheme {
           secondary: InnerscapeColors.peach,
           surface: InnerscapeColors.cream,
         ),
-        textTheme: GoogleFonts.interTextTheme(),
+        fontFamily: 'BricolageGrotesque',
         appBarTheme: AppBarTheme(
           backgroundColor: InnerscapeColors.cream,
           elevation: 0,
