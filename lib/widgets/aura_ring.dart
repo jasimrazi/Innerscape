@@ -13,10 +13,13 @@ class AuraRing extends StatefulWidget {
   /// Hue rotation in degrees (mimics CSS `filter: hue-rotate(Xdeg)`)
   final double hueShift;
 
+  final Widget? child;
+
   const AuraRing({
     super.key,
     this.size = AuraRingSize.md,
     this.hueShift = 0,
+    this.child,
   });
 
   @override
@@ -192,6 +195,7 @@ class _AuraRingState extends State<AuraRing> with TickerProviderStateMixin {
                     ),
                   ],
                 ),
+                child: widget.child != null ? Center(child: widget.child) : null,
               ),
             ),
           ),

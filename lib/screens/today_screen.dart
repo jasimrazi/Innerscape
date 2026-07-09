@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/aura_ring.dart';
@@ -14,13 +15,20 @@ class TodayScreen extends StatefulWidget {
 }
 
 class _TodayScreenState extends State<TodayScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _winCtrl = TextEditingController();
   final _goalCtrl = TextEditingController();
   bool _showToast = false;
 
   late final AnimationController _toastCtrl;
   late final Animation<double> _toastAnim;
+
+  // Breathing Guide State
+  bool _isBreathing = false;
+  String _breathingText = 'Hold to breathe';
+
+  late final AnimationController _breathingCtrl;
+  late final Animation<double> _breathingScaleAnim;
 
   @override
   void initState() {
@@ -30,6 +38,29 @@ class _TodayScreenState extends State<TodayScreen>
       duration: const Duration(milliseconds: 300),
     );
     _toastAnim = CurvedAnimation(parent: _toastCtrl, curve: Curves.easeOut);
+
+    // 4 seconds to inhale, 4 seconds to exhale
+    _breathingCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+    _breathingScaleAnim = Tween<double>(begin: 1.0, end: 1.35).animate(
+      CurvedAnimation(parent: _breathingCtrl, curve: Curves.easeInOutSine),
+    );
+
+    _breathingCtrl.addStatusListener((status) {
+      if (status == AnimationStatus.forward) {
+        setState(() {
+          _breathingText = 'Breathe in...';
+        });
+        HapticFeedback.lightImpact();
+      } else if (status == AnimationStatus.reverse) {
+        setState(() {
+          _breathingText = 'Breathe out...';
+        });
+        HapticFeedback.lightImpact();
+      }
+    });
   }
 
   @override
@@ -37,7 +68,32 @@ class _TodayScreenState extends State<TodayScreen>
     _winCtrl.dispose();
     _goalCtrl.dispose();
     _toastCtrl.dispose();
+    _breathingCtrl.dispose();
     super.dispose();
+  }
+
+  void _startBreathing() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _isBreathing = true;
+      _breathingText = 'Breathe in...';
+    });
+    _breathingCtrl.repeat(reverse: true);
+  }
+
+  void _stopBreathing() {
+    if (!_isBreathing) return;
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isBreathing = false;
+      _breathingText = 'Hold to breathe';
+    });
+    // Smoothly shrink back to normal scale
+    _breathingCtrl.animateTo(
+      0.0,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   void _save() {
@@ -138,12 +194,47 @@ class _TodayScreenState extends State<TodayScreen>
                     child: Padding(
                       padding: const EdgeInsets.only(top: 20, bottom: 6),
                       child: Center(
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 600),
-                          curve: Curves.easeInOut,
-                          child: AuraRing(
-                            size: AuraRingSize.lg,
-                            hueShift: provider.ringHue,
+                        child: ScaleTransition(
+                          scale: _breathingScaleAnim,
+                          child: GestureDetector(
+                            onTapDown: (_) => _startBreathing(),
+                            onTapUp: (_) => _stopBreathing(),
+                            onTapCancel: () => _stopBreathing(),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.easeInOut,
+                              child: AuraRing(
+                                size: AuraRingSize.lg,
+                                hueShift: provider.ringHue,
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 400),
+                                  child: Column(
+                                    key: ValueKey(_isBreathing ? _breathingText : 'idle'),
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        _isBreathing ? _breathingText : 'Hold to breathe',
+                                        style: InnerscapeText.serifItalic(
+                                          size: 15,
+                                          color: _isBreathing
+                                              ? InnerscapeColors.ink
+                                              : InnerscapeColors.mauve,
+                                        ),
+                                      ),
+                                      if (!_isBreathing) ...[
+                                        const SizedBox(height: 8),
+                                        Icon(
+                                          Icons.spa_outlined,
+                                          color: InnerscapeColors.mauve
+                                              .withValues(alpha: 0.5),
+                                          size: 18,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
