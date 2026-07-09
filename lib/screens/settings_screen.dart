@@ -40,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Evening reminder',
                       trailing: Text(
                         '8:00 PM',
-                        style: InnerscapeText.bodyInter(
+                        style: InnerscapeText.body(
                           size: 13,
                           color: InnerscapeColors.mauve,
                         ),
@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Reminder sound',
                       trailing: Text(
                         'Soft chime',
-                        style: InnerscapeText.bodyInter(
+                        style: InnerscapeText.body(
                           size: 13,
                           color: InnerscapeColors.mauve,
                         ),
@@ -78,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'Export journal',
                       trailing: Text(
                         '›',
-                        style: InnerscapeText.bodyInter(
+                        style: InnerscapeText.body(
                           size: 17,
                           color: InnerscapeColors.mauve,
                         ),
@@ -89,7 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       label: 'About Innerscape',
                       trailing: Text(
                         '›',
-                        style: InnerscapeText.bodyInter(
+                        style: InnerscapeText.body(
                           size: 17,
                           color: InnerscapeColors.mauve,
                         ),

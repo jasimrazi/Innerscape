@@ -76,7 +76,7 @@ class _TodayScreenState extends State<TodayScreen>
           gradient: RadialGradient(
             center: Alignment(0.7, 0.8),
             radius: 1.2,
-            colors: [Color(0xFFFFE9D6), InnerscapeColors.cream],
+            colors: [InnerscapeColors.warmPeach, InnerscapeColors.cream],
           ),
         ),
         child: Stack(
@@ -125,7 +125,7 @@ class _TodayScreenState extends State<TodayScreen>
                                 const SizedBox(width: 6),
                                 Text(
                                   '12 days',
-                                  style: InnerscapeText.bodyInter(
+                                  style: InnerscapeText.body(
                                     size: 12.5,
                                     weight: FontWeight.w600,
                                   ),
@@ -293,7 +293,7 @@ class _TodayScreenState extends State<TodayScreen>
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: const [
                             BoxShadow(
-                              color: Color(0x4D1E142D),
+                              color: InnerscapeColors.toastShadow,
                               blurRadius: 26,
                               offset: Offset(0, 10),
                             ),
@@ -301,10 +301,10 @@ class _TodayScreenState extends State<TodayScreen>
                         ),
                         child: Text(
                           'Saved for today ✓',
-                          style: InnerscapeText.bodyInter(
+                          style: InnerscapeText.body(
                             size: 13,
                             weight: FontWeight.w500,
-                            color: const Color(0xFFF4EEFB),
+                            color: InnerscapeColors.toastText,
                           ),
                         ),
                       ),
@@ -383,10 +383,10 @@ class _GradientButtonState extends State<_GradientButton>
           child: Center(
             child: Text(
               widget.label,
-              style: InnerscapeText.bodyInter(
+              style: InnerscapeText.body(
                 size: 14.5,
                 weight: FontWeight.w600,
-                color: const Color(0xFF3A2C29),
+                color: InnerscapeColors.brown,
               ),
             ),
           ),

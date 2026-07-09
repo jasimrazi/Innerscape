@@ -113,7 +113,7 @@ class _EntryRowState extends State<_EntryRow> {
                 children: [
                   Text(
                     widget.entry.date,
-                    style: InnerscapeText.bodyInter(
+                    style: InnerscapeText.body(
                       size: 11,
                       color: InnerscapeColors.mauve,
                     ),
@@ -128,7 +128,7 @@ class _EntryRowState extends State<_EntryRow> {
                   const SizedBox(height: 3),
                   Text(
                     'Goal: ${widget.entry.goal}',
-                    style: InnerscapeText.bodyInter(
+                    style: InnerscapeText.body(
                       size: 11.5,
                       color: InnerscapeColors.mauve,
                     ),

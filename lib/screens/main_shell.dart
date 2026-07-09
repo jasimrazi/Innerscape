@@ -62,7 +62,7 @@ class _InnerscapeTabBar extends StatelessWidget {
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          color: const Color(0xDBFBF7F0),
+          color: InnerscapeColors.creamBlur,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -97,12 +97,12 @@ class _InnerscapeTabBar extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               tab.label,
-                              style: InnerscapeText.bodyInter(
+                              style: InnerscapeText.body(
                                 size: 9.5,
                                 weight: FontWeight.w600,
                                 color: isActive
                                     ? InnerscapeColors.ink
-                                    : const Color(0xFFB3A6C2),
+                                    : InnerscapeColors.hint,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -148,7 +148,7 @@ class _TabIconPainter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? InnerscapeColors.ink : const Color(0xFFB3A6C2);
+    final color = active ? InnerscapeColors.ink : InnerscapeColors.hint;
     return SizedBox(
       width: 22,
       height: 22,

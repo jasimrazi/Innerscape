@@ -67,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: RadialGradient(
             center: Alignment(-0.7, -0.8),
             radius: 1.2,
-            colors: [Color(0xFFF3E9FF), InnerscapeColors.cream],
+            colors: [InnerscapeColors.lavender, InnerscapeColors.cream],
           ),
         ),
         child: Center(
@@ -108,13 +108,13 @@ class _SplashScreenState extends State<SplashScreen>
                 // App Name
                 Text(
                   'Innerscape',
-                  style: InnerscapeText.heading(size: 28),
+                  style: InnerscapeText.headingItalic(size: 32),
                 ),
                 const SizedBox(height: 6),
                 // Tagline
                 Text(
                   'A breath each evening',
-                  style: InnerscapeText.body(
+                  style: InnerscapeText.serifItalic(
                     size: 15,
                     color: InnerscapeColors.mauve,
                   ),

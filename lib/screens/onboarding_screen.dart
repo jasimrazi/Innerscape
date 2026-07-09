@@ -50,7 +50,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           gradient: RadialGradient(
             center: Alignment(-0.7, -0.8),
             radius: 1.2,
-            colors: [Color(0xFFF3E9FF), InnerscapeColors.cream],
+            colors: [InnerscapeColors.lavender, InnerscapeColors.cream],
           ),
         ),
         child: SafeArea(
@@ -78,7 +78,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: Text(
                     'A breath each evening.\nOne win behind you, one goal ahead.',
                     textAlign: TextAlign.center,
-                    style: InnerscapeText.body(
+                    style: InnerscapeText.serifItalic(
                       size: 16.5,
                       color: InnerscapeColors.inkSoft,
                     ),
@@ -96,7 +96,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   padding: const EdgeInsets.only(bottom: 28),
                   child: Text(
                     'Takes less than a minute a day',
-                    style: InnerscapeText.bodyInter(
+                    style: InnerscapeText.body(
                       size: 11.5,
                       color: InnerscapeColors.mauve,
                     ),
@@ -175,10 +175,10 @@ class _BeginButtonState extends State<_BeginButton>
           child: Center(
             child: Text(
               'Begin',
-              style: InnerscapeText.bodyInter(
+              style: InnerscapeText.body(
                 size: 15,
                 weight: FontWeight.w600,
-                color: const Color(0xFF3A2C29),
+                color: InnerscapeColors.brown,
               ),
             ),
           ),

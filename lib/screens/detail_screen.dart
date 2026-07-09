@@ -17,7 +17,7 @@ class DetailScreen extends StatelessWidget {
           gradient: RadialGradient(
             center: Alignment(-0.5, -0.6),
             radius: 1.0,
-            colors: [Color(0xFFF3E9FF), InnerscapeColors.cream],
+            colors: [InnerscapeColors.lavender, InnerscapeColors.cream],
           ),
         ),
         child: SafeArea(
@@ -44,7 +44,7 @@ class DetailScreen extends StatelessWidget {
                         ),
                         child: Text(
                           '← Back',
-                          style: InnerscapeText.bodyInter(
+                          style: InnerscapeText.body(
                             size: 12.5,
                             weight: FontWeight.w500,
                           ),

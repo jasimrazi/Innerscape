@@ -11,20 +11,28 @@ class InnerscapeColors {
   static const ink = Color(0xFF382C46);
   static const inkSoft = Color(0xFF5B4E6C);
   static const mauve = Color(0xFF8D8093);
+  static const lavender = Color(0xFFF3E9FF);
+  static const brown = Color(0xFF3A2C29);
+  static const hint = Color(0xFFB3A6C2);
+  static const toastText = Color(0xFFF4EEFB);
+  static const warmPeach = Color(0xFFFFE9D6);
+  static const cardShadow = Color(0x245A4678);
+  static const toastShadow = Color(0x4D1E142D);
   static const line = Color(0x17382C46);
   static const lineStrong = Color(0x29382C46);
   static const glass = Color(0x8CFFFFFF);
   static const glassStrong = Color(0xB8FFFFFF);
+  static const creamBlur = Color(0xDBFBF7F0);
 }
 
 // ── Text Styles ───────────────────────────────────────────────────────────────
 class InnerscapeText {
-  static TextStyle eyebrow({Color? color}) => const TextStyle(
+  static TextStyle eyebrow({Color? color}) => TextStyle(
         fontFamily: 'BricolageGrotesque',
         fontSize: 10.5,
         letterSpacing: 0.15 * 10.5,
         fontWeight: FontWeight.w600,
-        color: InnerscapeColors.mauve,
+        color: color ?? InnerscapeColors.mauve,
       );
 
   static TextStyle heading({double size = 22, Color? color}) => TextStyle(
@@ -61,14 +69,6 @@ class InnerscapeText {
         fontWeight: weight,
         color: color ?? InnerscapeColors.ink,
       );
-
-  @Deprecated('Use body instead')
-  static TextStyle bodyInter({
-    double size = 13,
-    FontWeight weight = FontWeight.w400,
-    Color? color,
-  }) =>
-      body(size: size, weight: weight, color: color);
 }
 
 // ── App Theme ─────────────────────────────────────────────────────────────────

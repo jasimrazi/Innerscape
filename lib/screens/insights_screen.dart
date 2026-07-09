@@ -98,7 +98,7 @@ class InsightsScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'This week',
-                        style: InnerscapeText.bodyInter(
+                        style: InnerscapeText.body(
                           size: 11,
                           color: InnerscapeColors.mauve,
                         ),
@@ -217,7 +217,7 @@ class _WeekDay extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           label,
-          style: InnerscapeText.bodyInter(
+          style: InnerscapeText.body(
             size: 10,
             color: InnerscapeColors.mauve,
           ),
@@ -245,7 +245,7 @@ class _LegendDot extends StatelessWidget {
         const SizedBox(width: 5),
         Text(
           label,
-          style: InnerscapeText.bodyInter(
+          style: InnerscapeText.body(
             size: 10.5,
             color: InnerscapeColors.mauve,
           ),
@@ -283,7 +283,7 @@ class _FocusFatiguePainter extends CustomPainter {
       tp.text = TextSpan(
         text: _days[i],
         style: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'BricolageGrotesque',
           fontSize: 9,
           color: InnerscapeColors.mauve,
         ),

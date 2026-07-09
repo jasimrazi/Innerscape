@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import '../theme/app_theme.dart';
 
 enum AuraRingSize { xs, sm, md, lg }
 
@@ -102,10 +103,10 @@ class _AuraRingState extends State<AuraRing> with TickerProviderStateMixin {
 
   List<Color> get _gradientColors {
     final base = [
-      const Color(0xFFC6AEE8),
-      const Color(0xFFF6C39A),
-      const Color(0xFFE7DCF6),
-      const Color(0xFFC6AEE8),
+      InnerscapeColors.violet,
+      InnerscapeColors.peach,
+      InnerscapeColors.violetSoft,
+      InnerscapeColors.violet,
     ];
     return base.map((c) => _hueRotate(c, widget.hueShift)).toList();
   }
@@ -182,7 +183,7 @@ class _AuraRingState extends State<AuraRing> with TickerProviderStateMixin {
                 height: coreD,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xB8FEFCF9),
+                  color: InnerscapeColors.card.withValues(alpha: 0.72),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.white.withValues(alpha: 0.7),
