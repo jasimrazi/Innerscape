@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
-import 'screens/onboarding_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +23,7 @@ class InnerscapeApp extends StatelessWidget {
       title: 'Innerscape',
       debugShowCheckedModeBanner: false,
       theme: InnerscapeTheme.theme,
-      home: const OnboardingScreen(),
+      home: const SplashScreen(),
     );
   }
 }

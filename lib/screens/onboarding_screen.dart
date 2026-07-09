@@ -78,7 +78,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: Text(
                     'A breath each evening.\nOne win behind you, one goal ahead.',
                     textAlign: TextAlign.center,
-                    style: InnerscapeText.serifItalic(
+                    style: InnerscapeText.body(
                       size: 16.5,
                       color: InnerscapeColors.inkSoft,
                     ),
