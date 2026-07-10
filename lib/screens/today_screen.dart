@@ -53,12 +53,12 @@ class _TodayScreenState extends State<TodayScreen>
         setState(() {
           _breathingText = 'Breathe in...';
         });
-        HapticFeedback.lightImpact();
+        HapticFeedback.selectionClick();
       } else if (status == AnimationStatus.reverse) {
         setState(() {
           _breathingText = 'Breathe out...';
         });
-        HapticFeedback.lightImpact();
+        HapticFeedback.selectionClick();
       }
     });
   }
@@ -73,7 +73,7 @@ class _TodayScreenState extends State<TodayScreen>
   }
 
   void _startBreathing() {
-    HapticFeedback.mediumImpact();
+    HapticFeedback.selectionClick();
     setState(() {
       _isBreathing = true;
       _breathingText = 'Breathe in...';
@@ -83,7 +83,7 @@ class _TodayScreenState extends State<TodayScreen>
 
   void _stopBreathing() {
     if (!_isBreathing) return;
-    HapticFeedback.lightImpact();
+    HapticFeedback.selectionClick();
     setState(() {
       _isBreathing = false;
       _breathingText = 'Hold to breathe';
