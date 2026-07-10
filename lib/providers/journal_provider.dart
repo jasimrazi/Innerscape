@@ -23,7 +23,7 @@ class JournalProvider extends ChangeNotifier {
   int _longestStreak = 31;
   int get longestStreak => _longestStreak;
 
-  int get totalEntries => _entries.length + 142; // Maintaining prototype base of 146
+  int get totalEntries => _entries.length;
 
   // Settings State
   bool _lightMode = true;
@@ -64,14 +64,20 @@ class JournalProvider extends ChangeNotifier {
   String get caption => _caption;
 
   // Add new entry and update stats
-  void saveEntry(String winText, String goalText) {
+  /// Returns true if saved, false if inputs were empty.
+  bool saveEntry(String winText, String goalText) {
+    // Reject empty entries
+    if (winText.trim().isEmpty && goalText.trim().isEmpty) {
+      return false;
+    }
+
     final rng = math.Random();
     _ringHue = rng.nextDouble() * 60 - 30;
     _caption = _captions[1 + rng.nextInt(_captions.length - 1)];
 
     final now = DateTime.now();
     final days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     // Format: "Thursday, July 9"
     final dateStr = "${days[now.weekday % 7]}, ${months[now.month - 1]} ${now.day}";
 
@@ -79,19 +85,28 @@ class JournalProvider extends ChangeNotifier {
       id: now.toIso8601String(),
       timestamp: now,
       date: dateStr,
-      win: winText,
-      goal: goalText,
+      win: winText.trim(),
+      goal: goalText.trim(),
       hueShift: _ringHue,
       moodValue: _moodValue,
     );
 
     _entries.insert(0, newEntry);
-    _streak += 1;
-    if (_streak > _longestStreak) {
-      _longestStreak = _streak;
+
+    // Only increment streak if no entry exists for today yet
+    final alreadySavedToday = _entries.skip(1).any((e) =>
+        e.timestamp.year == now.year &&
+        e.timestamp.month == now.month &&
+        e.timestamp.day == now.day);
+    if (!alreadySavedToday) {
+      _streak += 1;
+      if (_streak > _longestStreak) {
+        _longestStreak = _streak;
+      }
     }
 
     notifyListeners();
+    return true;
   }
 
   // Breathing Guide State

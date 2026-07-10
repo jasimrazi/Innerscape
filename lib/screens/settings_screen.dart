@@ -78,6 +78,9 @@ class SettingsScreen extends StatelessWidget {
                           color: InnerscapeColors.mauve,
                         ),
                       ),
+                      onTap: () {
+                        // TODO: implement export journal
+                      },
                     ),
                     const _Divider(),
                     _SettingsRow(
@@ -87,6 +90,22 @@ class SettingsScreen extends StatelessWidget {
                         style: InnerscapeText.body(
                           size: 17,
                           color: InnerscapeColors.mauve,
+                        ),
+                      ),
+                      onTap: () {
+                        // TODO: implement about screen
+                      },
+                    ),
+                    const Spacer(),
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'Innerscape v0.1.0',
+                          style: InnerscapeText.body(
+                            size: 11,
+                            color: InnerscapeColors.hint,
+                          ),
                         ),
                       ),
                     ),
@@ -104,24 +123,51 @@ class SettingsScreen extends StatelessWidget {
 class _SettingsRow extends StatelessWidget {
   final String label;
   final Widget trailing;
-  const _SettingsRow({required this.label, required this.trailing});
+  final VoidCallback? onTap;
+  const _SettingsRow({required this.label, required this.trailing, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final content = Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: InnerscapeText.serifItalic(
-              size: 15,
-              color: InnerscapeColors.ink,
+          Expanded(
+            child: Text(
+              label,
+              style: InnerscapeText.serifItalic(
+                size: 15,
+                color: InnerscapeColors.ink,
+              ),
             ),
           ),
           trailing,
         ],
+      ),
+    );
+
+    if (onTap == null) return content;
+
+    final pressed = ValueNotifier<bool>(false);
+    return GestureDetector(
+      onTapDown: (_) => pressed.value = true,
+      onTapUp: (_) {
+        pressed.value = false;
+        onTap!();
+      },
+      onTapCancel: () => pressed.value = false,
+      behavior: HitTestBehavior.opaque,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: pressed,
+        builder: (context, isPressed, child) {
+          return AnimatedOpacity(
+            opacity: isPressed ? 0.5 : 1.0,
+            duration: const Duration(milliseconds: 100),
+            child: child,
+          );
+        },
+        child: content,
       ),
     );
   }

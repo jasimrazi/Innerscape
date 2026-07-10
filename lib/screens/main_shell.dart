@@ -79,43 +79,48 @@ class _InnerscapeTabBar extends StatelessWidget {
                     final idx = e.key;
                     final tab = e.value;
                     final isActive = currentIndex == idx;
-                    return GestureDetector(
-                      onTap: () => onTap(idx),
-                      behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _TabIconPainter(
-                              icon: tab.iconPath,
-                              active: isActive,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              tab.label,
-                              style: InnerscapeText.body(
-                                size: 9.5,
-                                weight: FontWeight.w600,
-                                color: isActive
-                                    ? InnerscapeColors.ink
-                                    : InnerscapeColors.hint,
+                    return Semantics(
+                      label: tab.label,
+                      button: true,
+                      selected: isActive,
+                      child: GestureDetector(
+                        onTap: () => onTap(idx),
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _TabIconPainter(
+                                icon: tab.iconPath,
+                                active: isActive,
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            AnimatedOpacity(
-                              opacity: isActive ? 1.0 : 0.0,
-                              duration: const Duration(milliseconds: 200),
-                              child: Container(
-                                width: 4,
-                                height: 4,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: InnerscapeColors.violet,
+                              const SizedBox(height: 4),
+                              Text(
+                                tab.label,
+                                style: InnerscapeText.body(
+                                  size: 10.5,
+                                  weight: FontWeight.w600,
+                                  color: isActive
+                                      ? InnerscapeColors.ink
+                                      : InnerscapeColors.hint,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              AnimatedOpacity(
+                                opacity: isActive ? 1.0 : 0.0,
+                                duration: const Duration(milliseconds: 200),
+                                child: Container(
+                                  width: 4,
+                                  height: 4,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: InnerscapeColors.violet,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -199,9 +204,16 @@ class _IconPainter extends CustomPainter {
         canvas.drawPath(path, paint);
         break;
       case _TabIcon.settings:
-        // Gear: circle + outer ring hint
-        canvas.drawCircle(Offset(s / 2, s / 2), s * 0.14, paint);
-        canvas.drawCircle(Offset(s / 2, s / 2), s * 0.36, paint);
+        // Gear: small circle with tick marks
+        canvas.drawCircle(Offset(s / 2, s / 2), s * 0.16, paint);
+        // Top tick
+        canvas.drawLine(Offset(s / 2, s * 0.08), Offset(s / 2, s * 0.24), paint);
+        // Bottom tick
+        canvas.drawLine(Offset(s / 2, s * 0.76), Offset(s / 2, s * 0.92), paint);
+        // Left tick
+        canvas.drawLine(Offset(s * 0.08, s / 2), Offset(s * 0.24, s / 2), paint);
+        // Right tick
+        canvas.drawLine(Offset(s * 0.76, s / 2), Offset(s * 0.92, s / 2), paint);
         break;
     }
   }

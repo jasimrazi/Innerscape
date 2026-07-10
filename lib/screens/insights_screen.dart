@@ -35,7 +35,7 @@ class InsightsScreen extends StatelessWidget {
 
               // Streak card
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
+                padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
                 child: GlassCard(
                   child: Column(
                     children: [
@@ -54,7 +54,7 @@ class InsightsScreen extends StatelessWidget {
 
               // Stat row
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 12, 22, 0),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
                 child: Row(
                   children: [
                     Expanded(
@@ -90,7 +90,7 @@ class InsightsScreen extends StatelessWidget {
 
               // Focus vs Fatigue chart
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 12, 22, 0),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
                 child: GlassCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,7 +131,7 @@ class InsightsScreen extends StatelessWidget {
 
               // Weekly Insights card
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 12, 22, 0),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
                 child: GlassCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +159,7 @@ class InsightsScreen extends StatelessWidget {
 
               // Weekly aura grid
               Padding(
-                padding: const EdgeInsets.fromLTRB(22, 12, 22, 0),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
                 child: GlassCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

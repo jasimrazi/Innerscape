@@ -89,7 +89,14 @@ class _TodayScreenState extends State<TodayScreen>
   void _save() {
     FocusScope.of(context).unfocus();
     final provider = context.read<JournalProvider>();
-    provider.saveEntry(_winCtrl.text, _goalCtrl.text);
+    final saved = provider.saveEntry(_winCtrl.text, _goalCtrl.text);
+
+    if (!saved) {
+      // Entry was empty — don't clear or show toast
+      HapticFeedback.heavyImpact();
+      return;
+    }
+
     _winCtrl.clear();
     _goalCtrl.clear();
     provider.setMoodValue(0.5);
@@ -124,10 +131,11 @@ class _TodayScreenState extends State<TodayScreen>
           children: [
             SafeArea(
               child: CustomScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 slivers: [
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                      padding: const EdgeInsets.fromLTRB(24, 22, 24, 0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -254,7 +262,7 @@ class _TodayScreenState extends State<TodayScreen>
                   // Mood slider
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 0, 22, 16),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                       child: MoodSlider(
                         value: provider.moodValue,
                         onChanged: (v) => provider.setMoodValue(v),
@@ -265,7 +273,7 @@ class _TodayScreenState extends State<TodayScreen>
                   // Input fields
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 0, 22, 14),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
                       child: GlassCard(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +307,7 @@ class _TodayScreenState extends State<TodayScreen>
 
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 0, 22, 14),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
                       child: GlassCard(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +342,7 @@ class _TodayScreenState extends State<TodayScreen>
                   // Save button
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 4, 22, 32),
+                      padding: EdgeInsets.fromLTRB(24, 4, 24, 32 + MediaQuery.of(context).viewInsets.bottom),
                       child: _GradientButton(
                         label: "Save today's entry",
                         onTap: _save,

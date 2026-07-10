@@ -33,40 +33,66 @@ class HistoryScreen extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(14, 6, 14, 20),
-                itemCount: entriesList.length,
-                separatorBuilder: (_, _) => const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: InnerscapeColors.line,
-                  indent: 14,
-                  endIndent: 14,
-                ),
-                itemBuilder: (context, i) {
-                  final entry = entriesList[i];
-                  return _EntryRow(
-                    entry: entry,
-                    onTap: () => Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (_, _, _) =>
-                            DetailScreen(entry: entry),
-                        transitionsBuilder: (_, anim, _, child) =>
-                            SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(1.0, 0),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                              parent: anim, curve: Curves.easeOutCubic)),
-                          child: child,
-                        ),
-                        transitionDuration:
-                            const Duration(milliseconds: 350),
+              child: entriesList.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.auto_stories_outlined,
+                            size: 48,
+                            color: InnerscapeColors.hint,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No entries yet',
+                            style: InnerscapeText.heading(size: 18),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Your reflections will appear here',
+                            style: InnerscapeText.serifItalic(
+                              size: 14,
+                              color: InnerscapeColors.mauve,
+                            ),
+                          ),
+                        ],
                       ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(10, 6, 10, 20),
+                      itemCount: entriesList.length,
+                      separatorBuilder: (_, _) => const Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: InnerscapeColors.line,
+                        indent: 14,
+                        endIndent: 14,
+                      ),
+                      itemBuilder: (context, i) {
+                        final entry = entriesList[i];
+                        return _EntryRow(
+                          entry: entry,
+                          onTap: () => Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder: (_, _, _) =>
+                                  DetailScreen(entry: entry),
+                              transitionsBuilder: (_, anim, _, child) =>
+                                  SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(1.0, 0),
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                    parent: anim, curve: Curves.easeOutCubic)),
+                                child: child,
+                              ),
+                              transitionDuration:
+                                  const Duration(milliseconds: 350),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
