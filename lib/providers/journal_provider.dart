@@ -93,4 +93,30 @@ class JournalProvider extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  // Breathing Guide State
+  bool _isBreathing = false;
+  bool get isBreathing => _isBreathing;
+
+  String _breathingText = 'Hold to breathe';
+  String get breathingText => _breathingText;
+
+  void setBreathing(bool val) {
+    _isBreathing = val;
+    notifyListeners();
+  }
+
+  void setBreathingText(String val) {
+    _breathingText = val;
+    notifyListeners();
+  }
+
+  // Toast Visibility State
+  bool _showToast = false;
+  bool get showToast => _showToast;
+
+  void setShowToast(bool val) {
+    _showToast = val;
+    notifyListeners();
+  }
 }

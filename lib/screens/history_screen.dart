@@ -75,82 +75,81 @@ class HistoryScreen extends StatelessWidget {
   }
 }
 
-class _EntryRow extends StatefulWidget {
+class _EntryRow extends StatelessWidget {
   final JournalEntry entry;
   final VoidCallback onTap;
   const _EntryRow({required this.entry, required this.onTap});
 
   @override
-  State<_EntryRow> createState() => _EntryRowState();
-}
-
-class _EntryRowState extends State<_EntryRow> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
+    final pressed = ValueNotifier<bool>(false);
     return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
+      onTapDown: (_) => pressed.value = true,
       onTapUp: (_) {
-        setState(() => _pressed = false);
-        widget.onTap();
+        pressed.value = false;
+        onTap();
       },
-      onTapCancel: () => setState(() => _pressed = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: _pressed
-              ? Colors.white.withValues(alpha: 0.5)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AuraRing(
-              size: AuraRingSize.sm,
-              hueShift: widget.entry.hueShift,
+      onTapCancel: () => pressed.value = false,
+      child: ValueListenableBuilder<bool>(
+        valueListenable: pressed,
+        builder: (context, isPressed, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isPressed
+                  ? Colors.white.withValues(alpha: 0.5)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(18),
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.entry.date,
-                    style: InnerscapeText.body(
-                      size: 11,
-                      color: InnerscapeColors.mauve,
-                    ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AuraRing(
+                  size: AuraRingSize.sm,
+                  hueShift: entry.hueShift,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entry.date,
+                        style: InnerscapeText.body(
+                          size: 11,
+                          color: InnerscapeColors.mauve,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '"${entry.win}"',
+                        style: InnerscapeText.serifItalic(size: 15),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Goal: ${entry.goal}',
+                        style: InnerscapeText.body(
+                          size: 11.5,
+                          color: InnerscapeColors.mauve,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '"${widget.entry.win}"',
-                    style: InnerscapeText.serifItalic(size: 15),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'Goal: ${widget.entry.goal}',
-                    style: InnerscapeText.body(
-                      size: 11.5,
-                      color: InnerscapeColors.mauve,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: InnerscapeColors.mauve,
+                  size: 18,
+                ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: InnerscapeColors.mauve,
-              size: 18,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

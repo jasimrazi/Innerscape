@@ -18,14 +18,9 @@ class _TodayScreenState extends State<TodayScreen>
     with TickerProviderStateMixin {
   final _winCtrl = TextEditingController();
   final _goalCtrl = TextEditingController();
-  bool _showToast = false;
 
   late final AnimationController _toastCtrl;
   late final Animation<double> _toastAnim;
-
-  // Breathing Guide State
-  bool _isBreathing = false;
-  String _breathingText = 'Hold to breathe';
 
   late final AnimationController _breathingCtrl;
   late final Animation<double> _breathingScaleAnim;
@@ -49,15 +44,12 @@ class _TodayScreenState extends State<TodayScreen>
     );
 
     _breathingCtrl.addStatusListener((status) {
+      final p = context.read<JournalProvider>();
       if (status == AnimationStatus.forward) {
-        setState(() {
-          _breathingText = 'Breathe in...';
-        });
+        p.setBreathingText('Breathe in...');
         HapticFeedback.selectionClick();
       } else if (status == AnimationStatus.reverse) {
-        setState(() {
-          _breathingText = 'Breathe out...';
-        });
+        p.setBreathingText('Breathe out...');
         HapticFeedback.selectionClick();
       }
     });
@@ -74,20 +66,18 @@ class _TodayScreenState extends State<TodayScreen>
 
   void _startBreathing() {
     HapticFeedback.selectionClick();
-    setState(() {
-      _isBreathing = true;
-      _breathingText = 'Breathe in...';
-    });
+    final p = context.read<JournalProvider>();
+    p.setBreathing(true);
+    p.setBreathingText('Breathe in...');
     _breathingCtrl.repeat(reverse: true);
   }
 
   void _stopBreathing() {
-    if (!_isBreathing) return;
+    final p = context.read<JournalProvider>();
+    if (!p.isBreathing) return;
     HapticFeedback.selectionClick();
-    setState(() {
-      _isBreathing = false;
-      _breathingText = 'Hold to breathe';
-    });
+    p.setBreathing(false);
+    p.setBreathingText('Hold to breathe');
     // Smoothly shrink back to normal scale
     _breathingCtrl.animateTo(
       0.0,
@@ -104,14 +94,14 @@ class _TodayScreenState extends State<TodayScreen>
     _goalCtrl.clear();
     provider.setMoodValue(0.5);
 
-    setState(() {
-      _showToast = true;
-    });
+    provider.setShowToast(true);
     _toastCtrl.forward();
     Future.delayed(const Duration(milliseconds: 2200), () {
       if (mounted) {
         _toastCtrl.reverse().then((_) {
-          if (mounted) setState(() => _showToast = false);
+          if (mounted) {
+            context.read<JournalProvider>().setShowToast(false);
+          }
         });
       }
     });
@@ -209,19 +199,19 @@ class _TodayScreenState extends State<TodayScreen>
                                 child: AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 400),
                                   child: Column(
-                                    key: ValueKey(_isBreathing ? _breathingText : 'idle'),
+                                    key: ValueKey(provider.isBreathing ? provider.breathingText : 'idle'),
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        _isBreathing ? _breathingText : 'Hold to breathe',
+                                        provider.isBreathing ? provider.breathingText : 'Hold to breathe',
                                         style: InnerscapeText.serifItalic(
                                           size: 15,
-                                          color: _isBreathing
+                                          color: provider.isBreathing
                                               ? InnerscapeColors.ink
                                               : InnerscapeColors.mauve,
                                         ),
                                       ),
-                                      if (!_isBreathing) ...[
+                                      if (!provider.isBreathing) ...[
                                         const SizedBox(height: 8),
                                         Icon(
                                           Icons.spa_outlined,
@@ -355,8 +345,8 @@ class _TodayScreenState extends State<TodayScreen>
               ),
             ),
 
-            // Toast notification
-            if (_showToast)
+             // Toast notification
+             if (provider.showToast)
               Positioned(
                 bottom: 100,
                 left: 0,

@@ -4,7 +4,7 @@ import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 
 import 'package:provider/provider.dart';
-import 'providers/journal_provider.dart';
+import 'providers/app_providers.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +15,8 @@ void main() {
     ),
   );
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => JournalProvider(),
+    MultiProvider(
+      providers: appProviders,
       child: const InnerscapeApp(),
     ),
   );
