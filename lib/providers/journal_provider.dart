@@ -1,8 +1,14 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/journal_entry.dart';
+import '../database/database_helper.dart';
+import '../database/daos/entries_dao.dart';
+import '../database/daos/settings_dao.dart';
 
 class JournalProvider extends ChangeNotifier {
+  final EntriesDao _entriesDao;
+  final SettingsDao _settingsDao;
+
   // Navigation State
   int _currentIndex = 0;
   int get currentIndex => _currentIndex;
@@ -13,14 +19,14 @@ class JournalProvider extends ChangeNotifier {
   }
 
   // Journal Entries List
-  final List<JournalEntry> _entries = List.from(kSampleEntries);
+  List<JournalEntry> _entries = [];
   List<JournalEntry> get entries => List.unmodifiable(_entries);
 
   // Streak Stats
-  int _streak = 12;
+  int _streak = 0;
   int get streak => _streak;
 
-  int _longestStreak = 31;
+  int _longestStreak = 0;
   int get longestStreak => _longestStreak;
 
   int get totalEntries => _entries.length;
@@ -29,16 +35,18 @@ class JournalProvider extends ChangeNotifier {
   bool _lightMode = true;
   bool get lightMode => _lightMode;
 
-  void setLightMode(bool val) {
+  Future<void> setLightMode(bool val) async {
     _lightMode = val;
+    await _settingsDao.set('light_mode', val.toString());
     notifyListeners();
   }
 
   bool _remindersOn = true;
   bool get remindersOn => _remindersOn;
 
-  void setRemindersOn(bool val) {
+  Future<void> setRemindersOn(bool val) async {
     _remindersOn = val;
+    await _settingsDao.set('reminders_on', val.toString());
     notifyListeners();
   }
 
@@ -62,6 +70,34 @@ class JournalProvider extends ChangeNotifier {
   ];
   String _caption = _captions[0];
   String get caption => _caption;
+
+  JournalProvider()
+      : _entriesDao = EntriesDao(DatabaseHelper.instance),
+        _settingsDao = SettingsDao(DatabaseHelper.instance);
+
+  /// Initializes the provider by loading entries and settings from the database.
+  /// Seeds sample data if the database is empty.
+  Future<void> init() async {
+    _entries = await _entriesDao.getAll();
+
+    // Seed sample data on first run
+    if (_entries.isEmpty) {
+      for (final entry in kSampleEntries) {
+        await _entriesDao.insert(entry);
+      }
+      _entries = await _entriesDao.getAll();
+    }
+
+    // Load settings from database
+    final settings = await _settingsDao.getAll();
+    _lightMode = (settings['light_mode'] ?? 'true') == 'true';
+    _remindersOn = (settings['reminders_on'] ?? 'true') == 'true';
+
+    // Calculate streaks
+    _updateStreaks();
+
+    notifyListeners();
+  }
 
   // Add new entry and update stats
   /// Returns true if saved, false if inputs were empty.
@@ -91,22 +127,87 @@ class JournalProvider extends ChangeNotifier {
       moodValue: _moodValue,
     );
 
+    // Save to memory
     _entries.insert(0, newEntry);
 
-    // Only increment streak if no entry exists for today yet
-    final alreadySavedToday = _entries.skip(1).any((e) =>
-        e.timestamp.year == now.year &&
-        e.timestamp.month == now.month &&
-        e.timestamp.day == now.day);
-    if (!alreadySavedToday) {
-      _streak += 1;
-      if (_streak > _longestStreak) {
-        _longestStreak = _streak;
-      }
-    }
+    // Save asynchronously to SQLite
+    _entriesDao.insert(newEntry);
+
+    // Update streaks
+    _updateStreaks();
 
     notifyListeners();
     return true;
+  }
+
+  void _updateStreaks() {
+    _streak = _computeCurrentStreak();
+    _longestStreak = _computeLongestStreak();
+  }
+
+  int _computeCurrentStreak() {
+    if (_entries.isEmpty) return 0;
+
+    // Get sorted, unique dates normalized to midnight local time
+    final entryDates = _entries
+        .map((e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    // If the latest entry is before yesterday, the streak is broken
+    final latestEntryDate = entryDates.first;
+    if (latestEntryDate.isBefore(yesterday)) {
+      return 0;
+    }
+
+    int streak = 1;
+    for (int i = 0; i < entryDates.length - 1; i++) {
+      final current = entryDates[i];
+      final next = entryDates[i + 1];
+      final diff = current.difference(next).inDays;
+
+      if (diff == 1) {
+        streak++;
+      } else if (diff > 1) {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  int _computeLongestStreak() {
+    if (_entries.isEmpty) return 0;
+
+    // Get sorted, unique dates normalized to midnight local time
+    final entryDates = _entries
+        .map((e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    int longest = 1;
+    int currentRun = 1;
+
+    for (int i = 0; i < entryDates.length - 1; i++) {
+      final current = entryDates[i];
+      final next = entryDates[i + 1];
+      final diff = current.difference(next).inDays;
+
+      if (diff == 1) {
+        currentRun++;
+        if (currentRun > longest) {
+          longest = currentRun;
+        }
+      } else if (diff > 1) {
+        currentRun = 1;
+      }
+    }
+    return longest;
   }
 
   // Breathing Guide State

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:innerscape/providers/app_providers.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 
 import 'package:provider/provider.dart';
-import 'providers/app_providers.dart';
+import 'providers/journal_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -14,6 +15,10 @@ void main() {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
+
+  final journalProvider = JournalProvider();
+  await journalProvider.init();
+
   runApp(
     MultiProvider(
       providers: appProviders,
