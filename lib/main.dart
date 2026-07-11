@@ -9,13 +9,7 @@ import 'providers/journal_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-
+  
   final journalProvider = JournalProvider();
   await journalProvider.init();
 
@@ -32,10 +26,22 @@ class InnerscapeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = context.watch<JournalProvider>().lightMode;
+    
+    // Dynamically update status bar icon colors
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+      ),
+    );
+
     return MaterialApp(
       title: 'Innerscape',
       debugShowCheckedModeBanner: false,
       theme: InnerscapeTheme.theme,
+      darkTheme: InnerscapeTheme.darkTheme,
+      themeMode: isLight ? ThemeMode.light : ThemeMode.dark,
       home: const SplashScreen(),
     );
   }

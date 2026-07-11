@@ -63,11 +63,11 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment(-0.7, -0.8),
             radius: 1.2,
-            colors: [InnerscapeColors.lavender, InnerscapeColors.cream],
+            colors: [context.colors.lavender, context.colors.cream],
           ),
         ),
         child: Center(
@@ -93,7 +93,7 @@ class _SplashScreenState extends State<SplashScreen>
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: InnerscapeColors.ink.withValues(alpha: 0.06),
+                        color: context.colors.ink.withValues(alpha: 0.06),
                         blurRadius: 30,
                         offset: const Offset(0, 10),
                       ),
@@ -116,7 +116,7 @@ class _SplashScreenState extends State<SplashScreen>
                   'A breath each evening',
                   style: InnerscapeText.serifItalic(
                     size: 15,
-                    color: InnerscapeColors.mauve,
+                    color: context.colors.mauve,
                   ),
                 ),
               ],

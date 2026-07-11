@@ -28,15 +28,14 @@ class GlassCard extends StatelessWidget {
           width: width,
           padding: padding ?? const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: InnerscapeColors.glass,
+            color: context.colors.glass,
             borderRadius: br,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.70),
               width: 1,
             ),
-            boxShadow: const [
-              BoxShadow(
-                color: InnerscapeColors.cardShadow,
+            boxShadow: [ BoxShadow(
+                color: context.colors.cardShadow,
                 blurRadius: 60,
                 offset: Offset(0, 20),
               ),

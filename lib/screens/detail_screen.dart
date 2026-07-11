@@ -21,13 +21,13 @@ class DetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: InnerscapeColors.cream,
+      backgroundColor: context.colors.cream,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment(-0.5, -0.6),
             radius: 1.0,
-            colors: [InnerscapeColors.lavender, InnerscapeColors.cream],
+            colors: [context.colors.lavender, context.colors.cream],
           ),
         ),
         child: SafeArea(
@@ -48,7 +48,7 @@ class DetailScreen extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: InnerscapeColors.lineStrong,
+                            color: context.colors.lineStrong,
                           ),
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -89,7 +89,7 @@ class DetailScreen extends StatelessWidget {
                         _moodLabel(entry.moodValue),
                         style: InnerscapeText.body(
                           size: 11,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -107,7 +107,7 @@ class DetailScreen extends StatelessWidget {
                               entry.win,
                               style: InnerscapeText.serifItalic(
                                 size: 17,
-                                color: InnerscapeColors.ink,
+                                color: context.colors.ink,
                               ),
                             ),
                           ],
@@ -131,7 +131,7 @@ class DetailScreen extends StatelessWidget {
                               entry.goal,
                               style: InnerscapeText.serifItalic(
                                 size: 17,
-                                color: InnerscapeColors.ink,
+                                color: context.colors.ink,
                               ),
                             ),
                           ],

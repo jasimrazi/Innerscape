@@ -46,11 +46,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment(-0.7, -0.8),
             radius: 1.2,
-            colors: [InnerscapeColors.lavender, InnerscapeColors.cream],
+            colors: [context.colors.lavender, context.colors.cream],
           ),
         ),
         child: SafeArea(
@@ -80,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     textAlign: TextAlign.center,
                     style: InnerscapeText.serifItalic(
                       size: 16.5,
-                      color: InnerscapeColors.inkSoft,
+                      color: context.colors.inkSoft,
                     ),
                   ),
                 ),
@@ -98,7 +98,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     'Takes less than a minute a day',
                     style: InnerscapeText.body(
                       size: 11.5,
-                      color: InnerscapeColors.mauve,
+                      color: context.colors.mauve,
                     ),
                   ),
                 ),
@@ -159,14 +159,14 @@ class _BeginButtonState extends State<_BeginButton>
           padding: const EdgeInsets.symmetric(vertical: 17),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [InnerscapeColors.violet, InnerscapeColors.peach],
+              colors: [context.colors.violet, context.colors.peach],
             ),
             boxShadow: [
               BoxShadow(
-                color: InnerscapeColors.violet.withValues(alpha: 0.40),
+                color: context.colors.violet.withValues(alpha: 0.40),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
@@ -178,7 +178,7 @@ class _BeginButtonState extends State<_BeginButton>
               style: InnerscapeText.body(
                 size: 15,
                 weight: FontWeight.w600,
-                color: InnerscapeColors.brown,
+                color: context.colors.brown,
               ),
             ),
           ),

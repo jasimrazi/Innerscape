@@ -12,7 +12,7 @@ class InsightsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<JournalProvider>();
     return Scaffold(
-      backgroundColor: InnerscapeColors.cream,
+      backgroundColor: context.colors.cream,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 24),
@@ -102,7 +102,7 @@ class InsightsScreen extends StatelessWidget {
                         'This week',
                         style: InnerscapeText.body(
                           size: 11,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -110,17 +110,21 @@ class InsightsScreen extends StatelessWidget {
                         height: 100,
                         child: CustomPaint(
                           size: const Size(double.infinity, 100),
-                          painter: _FocusFatiguePainter(),
+                          painter: _FocusFatiguePainter(
+                            violet: context.colors.violet,
+                            peach: context.colors.peach,
+                            mauve: context.colors.mauve,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       // Legend
                       Row(
                         children: [
-                          _LegendDot(color: InnerscapeColors.violet,
+                          _LegendDot(color: context.colors.violet,
                               label: 'Focus'),
                           const SizedBox(width: 16),
-                          _LegendDot(color: InnerscapeColors.peach,
+                          _LegendDot(color: context.colors.peach,
                               label: 'Fatigue'),
                         ],
                       ),
@@ -149,7 +153,7 @@ class InsightsScreen extends StatelessWidget {
                         'Your energy peaks after 10 PM. Consider deeper work then.',
                         style: InnerscapeText.serifItalic(
                           size: 15.5,
-                          color: InnerscapeColors.ink,
+                          color: context.colors.ink,
                         ),
                       ),
                     ],
@@ -211,7 +215,7 @@ class _WeekDay extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: InnerscapeColors.lineStrong,
+                    color: context.colors.lineStrong,
                     width: 1.5,
                   ),
                 ),
@@ -221,7 +225,7 @@ class _WeekDay extends StatelessWidget {
           label,
           style: InnerscapeText.body(
             size: 10,
-            color: InnerscapeColors.mauve,
+            color: context.colors.mauve,
           ),
         ),
       ],
@@ -249,7 +253,7 @@ class _LegendDot extends StatelessWidget {
           label,
           style: InnerscapeText.body(
             size: 10.5,
-            color: InnerscapeColors.mauve,
+            color: context.colors.mauve,
           ),
         ),
       ],
@@ -259,6 +263,16 @@ class _LegendDot extends StatelessWidget {
 
 // ── Focus vs Fatigue chart painter ────────────────────────────────────────────
 class _FocusFatiguePainter extends CustomPainter {
+  final Color violet;
+  final Color peach;
+  final Color mauve;
+
+  _FocusFatiguePainter({
+    required this.violet,
+    required this.peach,
+    required this.mauve,
+  });
+
   // Hardcoded sample data: Mon–Sun
   static const _focus = [0.55, 0.72, 0.48, 0.80, 0.65, 0.40, 0.90];
   static const _fatigue = [0.45, 0.30, 0.60, 0.25, 0.50, 0.70, 0.15];
@@ -272,22 +286,22 @@ class _FocusFatiguePainter extends CustomPainter {
     final step = w / (n - 1);
 
     // Draw smooth lines
-    _drawLine(canvas, size, _focus, InnerscapeColors.violet, step, h);
-    _drawLine(canvas, size, _fatigue, InnerscapeColors.peach, step, h);
+    _drawLine(canvas, size, _focus, violet, step, h);
+    _drawLine(canvas, size, _fatigue, peach, step, h);
 
     // Draw dots
-    _drawDots(canvas, size, _focus, InnerscapeColors.violet, step, h);
-    _drawDots(canvas, size, _fatigue, InnerscapeColors.peach, step, h);
+    _drawDots(canvas, size, _focus, violet, step, h);
+    _drawDots(canvas, size, _fatigue, peach, step, h);
 
     // Day labels
     final tp = TextPainter(textDirection: TextDirection.ltr);
     for (int i = 0; i < n; i++) {
       tp.text = TextSpan(
         text: _days[i],
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'BricolageGrotesque',
           fontSize: 9,
-          color: InnerscapeColors.mauve,
+          color: mauve,
         ),
       );
       tp.layout();

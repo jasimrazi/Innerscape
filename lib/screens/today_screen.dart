@@ -118,13 +118,13 @@ class _TodayScreenState extends State<TodayScreen>
   Widget build(BuildContext context) {
     final provider = context.watch<JournalProvider>();
     return Scaffold(
-      backgroundColor: InnerscapeColors.cream,
+      backgroundColor: context.colors.cream,
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment(0.7, 0.8),
             radius: 1.2,
-            colors: [InnerscapeColors.warmPeach, InnerscapeColors.cream],
+            colors: [context.colors.warmPeach, context.colors.cream],
           ),
         ),
         child: Stack(
@@ -161,7 +161,7 @@ class _TodayScreenState extends State<TodayScreen>
                               vertical: 7,
                             ),
                             decoration: BoxDecoration(
-                              color: InnerscapeColors.glassStrong,
+                              color: context.colors.glassStrong,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.8),
@@ -215,15 +215,15 @@ class _TodayScreenState extends State<TodayScreen>
                                         style: InnerscapeText.serifItalic(
                                           size: 15,
                                           color: provider.isBreathing
-                                              ? InnerscapeColors.ink
-                                              : InnerscapeColors.mauve,
+                                              ? context.colors.ink
+                                              : context.colors.mauve,
                                         ),
                                       ),
                                       if (!provider.isBreathing) ...[
                                         const SizedBox(height: 8),
                                         Icon(
                                           Icons.spa_outlined,
-                                          color: InnerscapeColors.mauve
+                                          color: context.colors.mauve
                                               .withValues(alpha: 0.5),
                                           size: 18,
                                         ),
@@ -251,7 +251,7 @@ class _TodayScreenState extends State<TodayScreen>
                             key: ValueKey(provider.caption),
                             style: InnerscapeText.serifItalic(
                               size: 13.5,
-                              color: InnerscapeColors.mauve,
+                              color: context.colors.mauve,
                             ),
                           ),
                         ),
@@ -293,7 +293,7 @@ class _TodayScreenState extends State<TodayScreen>
                                 hintText: 'What went right today?',
                                 hintStyle: InnerscapeText.serifItalic(
                                   size: 16.5,
-                                  color: InnerscapeColors.hint,
+                                  color: context.colors.hint,
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
@@ -327,7 +327,7 @@ class _TodayScreenState extends State<TodayScreen>
                                 hintText: "What's worth showing up for?",
                                 hintStyle: InnerscapeText.serifItalic(
                                   size: 16.5,
-                                  color: InnerscapeColors.hint,
+                                  color: context.colors.hint,
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
@@ -373,11 +373,10 @@ class _TodayScreenState extends State<TodayScreen>
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: InnerscapeColors.ink,
+                          color: context.colors.ink,
                           borderRadius: BorderRadius.circular(14),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: InnerscapeColors.toastShadow,
+                          boxShadow: [ BoxShadow(
+                              color: context.colors.toastShadow,
                               blurRadius: 26,
                               offset: Offset(0, 10),
                             ),
@@ -388,7 +387,7 @@ class _TodayScreenState extends State<TodayScreen>
                           style: InnerscapeText.body(
                             size: 13,
                             weight: FontWeight.w500,
-                            color: InnerscapeColors.toastText,
+                            color: context.colors.toastText,
                           ),
                         ),
                       ),
@@ -451,14 +450,14 @@ class _GradientButtonState extends State<_GradientButton>
           padding: const EdgeInsets.symmetric(vertical: 17),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [InnerscapeColors.violet, InnerscapeColors.peach],
+              colors: [context.colors.violet, context.colors.peach],
             ),
             boxShadow: [
               BoxShadow(
-                color: InnerscapeColors.violet.withValues(alpha: 0.40),
+                color: context.colors.violet.withValues(alpha: 0.40),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
@@ -470,7 +469,7 @@ class _GradientButtonState extends State<_GradientButton>
               style: InnerscapeText.body(
                 size: 14.5,
                 weight: FontWeight.w600,
-                color: InnerscapeColors.brown,
+                color: context.colors.brown,
               ),
             ),
           ),

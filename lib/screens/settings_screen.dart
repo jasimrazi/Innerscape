@@ -10,7 +10,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<JournalProvider>();
     return Scaffold(
-      backgroundColor: InnerscapeColors.cream,
+      backgroundColor: context.colors.cream,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +37,7 @@ class SettingsScreen extends StatelessWidget {
                         '8:00 PM',
                         style: InnerscapeText.body(
                           size: 13,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                       ),
                     ),
@@ -48,7 +48,7 @@ class SettingsScreen extends StatelessWidget {
                         'Soft chime',
                         style: InnerscapeText.body(
                           size: 13,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                       ),
                     ),
@@ -75,7 +75,7 @@ class SettingsScreen extends StatelessWidget {
                         '›',
                         style: InnerscapeText.body(
                           size: 17,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                       ),
                       onTap: () {
@@ -89,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
                         '›',
                         style: InnerscapeText.body(
                           size: 17,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                       ),
                       onTap: () {
@@ -104,7 +104,7 @@ class SettingsScreen extends StatelessWidget {
                           'Innerscape v0.1.0',
                           style: InnerscapeText.body(
                             size: 11,
-                            color: InnerscapeColors.hint,
+                            color: context.colors.hint,
                           ),
                         ),
                       ),
@@ -138,7 +138,7 @@ class _SettingsRow extends StatelessWidget {
               label,
               style: InnerscapeText.serifItalic(
                 size: 15,
-                color: InnerscapeColors.ink,
+                color: context.colors.ink,
               ),
             ),
           ),
@@ -178,10 +178,10 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(
+    return Divider(
       height: 1,
       thickness: 1,
-      color: InnerscapeColors.line,
+      color: context.colors.line,
     );
   }
 }
@@ -203,11 +203,11 @@ class _Toggle extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: value
-              ? const LinearGradient(
-                  colors: [InnerscapeColors.violet, InnerscapeColors.peach],
+              ? LinearGradient(
+                  colors: [context.colors.violet, context.colors.peach],
                 )
               : null,
-          color: value ? null : InnerscapeColors.lineStrong,
+          color: value ? null : context.colors.lineStrong,
         ),
         child: Stack(
           children: [

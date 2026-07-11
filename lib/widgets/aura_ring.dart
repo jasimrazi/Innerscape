@@ -106,10 +106,10 @@ class _AuraRingState extends State<AuraRing> with TickerProviderStateMixin {
 
   List<Color> get _gradientColors {
     final base = [
-      InnerscapeColors.violet,
-      InnerscapeColors.peach,
-      InnerscapeColors.violetSoft,
-      InnerscapeColors.violet,
+      context.colors.violet,
+      context.colors.peach,
+      context.colors.violetSoft,
+      context.colors.violet,
     ];
     return base.map((c) => _hueRotate(c, widget.hueShift)).toList();
   }
@@ -186,7 +186,7 @@ class _AuraRingState extends State<AuraRing> with TickerProviderStateMixin {
                 height: coreD,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: InnerscapeColors.card.withValues(alpha: 0.72),
+                  color: context.colors.card.withValues(alpha: 0.72),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.white.withValues(alpha: 0.7),

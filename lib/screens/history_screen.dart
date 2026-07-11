@@ -16,7 +16,7 @@ class HistoryScreen extends StatelessWidget {
     final entriesList = provider.entries;
 
     return Scaffold(
-      backgroundColor: InnerscapeColors.cream,
+      backgroundColor: context.colors.cream,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,7 +41,7 @@ class HistoryScreen extends StatelessWidget {
                           Icon(
                             Icons.auto_stories_outlined,
                             size: 48,
-                            color: InnerscapeColors.hint,
+                            color: context.colors.hint,
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -53,7 +53,7 @@ class HistoryScreen extends StatelessWidget {
                             'Your reflections will appear here',
                             style: InnerscapeText.serifItalic(
                               size: 14,
-                              color: InnerscapeColors.mauve,
+                              color: context.colors.mauve,
                             ),
                           ),
                         ],
@@ -62,10 +62,10 @@ class HistoryScreen extends StatelessWidget {
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(10, 6, 10, 20),
                       itemCount: entriesList.length,
-                      separatorBuilder: (_, _) => const Divider(
+                      separatorBuilder: (_, _) => Divider(
                         height: 1,
                         thickness: 1,
-                        color: InnerscapeColors.line,
+                        color: context.colors.line,
                         indent: 14,
                         endIndent: 14,
                       ),
@@ -144,7 +144,7 @@ class _EntryRow extends StatelessWidget {
                         entry.date,
                         style: InnerscapeText.body(
                           size: 11,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                       ),
                       const SizedBox(height: 3),
@@ -159,7 +159,7 @@ class _EntryRow extends StatelessWidget {
                         'Goal: ${entry.goal}',
                         style: InnerscapeText.body(
                           size: 11.5,
-                          color: InnerscapeColors.mauve,
+                          color: context.colors.mauve,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -167,9 +167,9 @@ class _EntryRow extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
-                  color: InnerscapeColors.mauve,
+                  color: context.colors.mauve,
                   size: 18,
                 ),
               ],

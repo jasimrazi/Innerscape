@@ -59,14 +59,14 @@ class _InnerscapeTabBar extends StatelessWidget {
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
-          color: InnerscapeColors.creamBlur,
+          color: context.colors.creamBlur,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Divider(
+              Divider(
                 height: 1,
                 thickness: 1,
-                color: InnerscapeColors.line,
+                color: context.colors.line,
               ),
               Padding(
                 padding: EdgeInsets.only(
@@ -102,8 +102,8 @@ class _InnerscapeTabBar extends StatelessWidget {
                                   size: 10.5,
                                   weight: FontWeight.w600,
                                   color: isActive
-                                      ? InnerscapeColors.ink
-                                      : InnerscapeColors.hint,
+                                      ? context.colors.ink
+                                      : context.colors.hint,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -113,9 +113,9 @@ class _InnerscapeTabBar extends StatelessWidget {
                                 child: Container(
                                   width: 4,
                                   height: 4,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: InnerscapeColors.violet,
+                                    color: context.colors.violet,
                                   ),
                                 ),
                               ),
@@ -150,7 +150,7 @@ class _TabIconPainter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? InnerscapeColors.ink : InnerscapeColors.hint;
+    final color = active ? context.colors.ink : context.colors.hint;
     return SizedBox(
       width: 22,
       height: 22,

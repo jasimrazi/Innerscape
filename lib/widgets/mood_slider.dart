@@ -64,7 +64,7 @@ class _MoodSliderState extends State<MoodSlider> {
           'How did today feel?',
           style: InnerscapeText.body(
             size: 12.5,
-            color: InnerscapeColors.mauve,
+            color: context.colors.mauve,
           ),
         ),
         const SizedBox(height: 12),
@@ -101,7 +101,7 @@ class _MoodSliderState extends State<MoodSlider> {
                         height: 4,
                         child: DecoratedBox(
                           decoration: BoxDecoration(
-                            color: InnerscapeColors.line,
+                            color: context.colors.line,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -118,10 +118,10 @@ class _MoodSliderState extends State<MoodSlider> {
                           curve: Curves.easeOutCubic,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(2),
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [
-                                InnerscapeColors.peachSoft,
-                                InnerscapeColors.violet,
+                                context.colors.peachSoft,
+                                context.colors.violet,
                               ],
                             ),
                           ),
@@ -139,16 +139,16 @@ class _MoodSliderState extends State<MoodSlider> {
                           height: 52,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: InnerscapeColors.violetSoft
+                            color: context.colors.violetSoft
                                 .withValues(alpha: 0.55),
                             border: Border.all(
-                              color: InnerscapeColors.violet
+                              color: context.colors.violet
                                   .withValues(alpha: 0.3),
                               width: 2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: InnerscapeColors.violet
+                                color: context.colors.violet
                                     .withValues(alpha: 0.12),
                                 blurRadius: 16,
                                 spreadRadius: 2,
@@ -203,7 +203,7 @@ class _MoodSliderState extends State<MoodSlider> {
               key: ValueKey(sel),
               style: InnerscapeText.serifItalic(
                 size: 14.5,
-                color: InnerscapeColors.inkSoft,
+                color: context.colors.inkSoft,
               ),
             ),
           ),
