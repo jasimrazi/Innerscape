@@ -42,7 +42,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await SupabaseService.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'io.supabase.flutterdemo://login-callback/',
+        redirectTo: 'io.supabase.innerscape://login-callback/',
       );
       return true;
     } catch (e) {
