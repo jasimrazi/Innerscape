@@ -32,52 +32,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> signUpWithEmail(String email, String password) async {
-    if (!SupabaseService.isInitialized) {
-      _errorMessage = 'Supabase credentials are not configured in supabase_service.dart';
-      notifyListeners();
-      return false;
-    }
-    _setLoading(true);
-    _errorMessage = null;
-    try {
-      await SupabaseService.client.auth.signUp(
-        email: email,
-        password: password,
-      );
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString().replaceAll('AuthException: ', '');
-      notifyListeners();
-      return false;
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  Future<bool> signInWithEmail(String email, String password) async {
-    if (!SupabaseService.isInitialized) {
-      _errorMessage = 'Supabase credentials are not configured in supabase_service.dart';
-      notifyListeners();
-      return false;
-    }
-    _setLoading(true);
-    _errorMessage = null;
-    try {
-      await SupabaseService.client.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString().replaceAll('AuthException: ', '');
-      notifyListeners();
-      return false;
-    } finally {
-      _setLoading(false);
-    }
-  }
-
   Future<bool> signInWithGoogle() async {
     if (!SupabaseService.isInitialized) {
       _errorMessage = 'Supabase credentials are not configured in supabase_service.dart';
@@ -88,6 +42,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await SupabaseService.client.auth.signInWithOAuth(
         OAuthProvider.google,
+        redirectTo: 'io.supabase.flutterdemo://login-callback/',
       );
       return true;
     } catch (e) {
