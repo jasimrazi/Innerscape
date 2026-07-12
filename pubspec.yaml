@@ -1,6 +1,6 @@
 name: innerscape
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0+1
 
 environment:
@@ -12,6 +12,8 @@ dependencies:
   provider: ^6.1.5+1
   sqflite: ^2.4.2+1
   path: ^1.9.1
+  supabase_flutter: ^2.16.0
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -23,6 +25,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/design/
+    - .env
   fonts:
     - family: BricolageGrotesque
       fonts:

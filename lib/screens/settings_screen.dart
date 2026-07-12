@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import '../providers/journal_provider.dart';
+import '../providers/auth_provider.dart';
+import 'auth_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -9,6 +11,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<JournalProvider>();
+    final authProvider = context.watch<AuthProvider>();
     return Scaffold(
       backgroundColor: context.colors.cream,
       body: SafeArea(
@@ -70,16 +73,24 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const _Divider(),
                     _SettingsRow(
-                      label: 'Export journal',
+                      label: authProvider.isAuthenticated 
+                          ? 'Account: ${authProvider.user?.email}'
+                          : 'Cloud Sync & Backup',
                       trailing: Text(
-                        '›',
+                        authProvider.isAuthenticated ? 'Sign Out' : 'Sign In ›',
                         style: InnerscapeText.body(
-                          size: 17,
-                          color: context.colors.mauve,
+                          size: 13,
+                          color: context.colors.violet,
                         ),
                       ),
                       onTap: () {
-                        // TODO: implement export journal
+                        if (authProvider.isAuthenticated) {
+                          authProvider.signOut();
+                        } else {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AuthScreen()),
+                          );
+                        }
                       },
                     ),
                     const _Divider(),
