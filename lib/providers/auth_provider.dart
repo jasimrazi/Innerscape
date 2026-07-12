@@ -43,6 +43,7 @@ class AuthProvider extends ChangeNotifier {
       await SupabaseService.client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: 'io.supabase.innerscape://login-callback/',
+        authScreenLaunchMode: LaunchMode.externalApplication,
       );
       return true;
     } catch (e) {
