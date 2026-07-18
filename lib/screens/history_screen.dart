@@ -26,9 +26,9 @@ class HistoryScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Your journal', style: InnerscapeText.eyebrow()),
+                  Text('Your journal', style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                   const SizedBox(height: 2),
-                  Text('History', style: InnerscapeText.heading(size: 22)),
+                  Text('History', style: InnerscapeText.heading(size: 22, color: context.colors.ink)),
                 ],
               ),
             ),
@@ -46,7 +46,7 @@ class HistoryScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           Text(
                             'No entries yet',
-                            style: InnerscapeText.heading(size: 18),
+                            style: InnerscapeText.heading(size: 18, color: context.colors.ink),
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -124,7 +124,7 @@ class _EntryRow extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isPressed
-                  ? Colors.white.withValues(alpha: 0.5)
+                  ? context.colors.glass
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(18),
             ),
@@ -150,7 +150,7 @@ class _EntryRow extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         '"${entry.win}"',
-                        style: InnerscapeText.serifItalic(size: 15),
+                        style: InnerscapeText.serifItalic(size: 15, color: context.colors.inkSoft),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),

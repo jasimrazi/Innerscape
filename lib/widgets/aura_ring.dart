@@ -189,7 +189,9 @@ class _AuraRingState extends State<AuraRing> with TickerProviderStateMixin {
                   color: context.colors.card.withValues(alpha: 0.72),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? context.colors.violet.withValues(alpha: 0.30)
+                          : Colors.white.withValues(alpha: 0.70),
                       blurRadius: 10,
                       spreadRadius: 0,
                     ),

@@ -145,12 +145,12 @@ class _TodayScreenState extends State<TodayScreen>
                             children: [
                               Text(
                                 'EVENING REFLECTION',
-                                style: InnerscapeText.eyebrow(),
+                                style: InnerscapeText.eyebrow(color: context.colors.mauve),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 'Today\'s aura',
-                                style: InnerscapeText.heading(size: 22),
+                                style: InnerscapeText.heading(size: 22, color: context.colors.ink),
                               ),
                             ],
                           ),
@@ -164,7 +164,7 @@ class _TodayScreenState extends State<TodayScreen>
                               color: context.colors.glassStrong,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: context.colors.lineStrong,
                               ),
                             ),
                             child: Row(
@@ -177,6 +177,7 @@ class _TodayScreenState extends State<TodayScreen>
                                   style: InnerscapeText.body(
                                     size: 12.5,
                                     weight: FontWeight.w600,
+                                    color: context.colors.ink,
                                   ),
                                 ),
                               ],
@@ -280,14 +281,14 @@ class _TodayScreenState extends State<TodayScreen>
                           children: [
                             Text(
                               "Today's one win",
-                              style: InnerscapeText.eyebrow(),
+                              style: InnerscapeText.eyebrow(color: context.colors.mauve),
                             ),
                             const SizedBox(height: 8),
                             TextField(
                               controller: _winCtrl,
                               minLines: 2,
                               maxLines: 4,
-                              style: InnerscapeText.serifItalic(size: 16.5),
+                              style: InnerscapeText.serifItalic(size: 16.5, color: context.colors.ink),
                               decoration: InputDecoration(
                                 border: InputBorder.none,
                                 hintText: 'What went right today?',
@@ -314,14 +315,14 @@ class _TodayScreenState extends State<TodayScreen>
                           children: [
                             Text(
                               "Tomorrow's one goal",
-                              style: InnerscapeText.eyebrow(),
+                              style: InnerscapeText.eyebrow(color: context.colors.mauve),
                             ),
                             const SizedBox(height: 8),
                             TextField(
                               controller: _goalCtrl,
                               minLines: 2,
                               maxLines: 4,
-                              style: InnerscapeText.serifItalic(size: 16.5),
+                              style: InnerscapeText.serifItalic(size: 16.5, color: context.colors.ink),
                               decoration: InputDecoration(
                                 border: InputBorder.none,
                                 hintText: "What's worth showing up for?",

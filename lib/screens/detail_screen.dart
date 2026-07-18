@@ -57,6 +57,7 @@ class DetailScreen extends StatelessWidget {
                           style: InnerscapeText.body(
                             size: 12.5,
                             weight: FontWeight.w500,
+                            color: context.colors.ink,
                           ),
                         ),
                       ),
@@ -76,7 +77,7 @@ class DetailScreen extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         entry.date,
-                        style: InnerscapeText.eyebrow(),
+                        style: InnerscapeText.eyebrow(color: context.colors.mauve),
                       ),
                       const SizedBox(height: 12),
                       // Mood indicator
@@ -101,7 +102,7 @@ class DetailScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('The win', style: InnerscapeText.eyebrow()),
+                            Text('The win', style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                             const SizedBox(height: 8),
                             Text(
                               entry.win,
@@ -124,7 +125,7 @@ class DetailScreen extends StatelessWidget {
                           children: [
                             Text(
                               'The goal, the day after',
-                              style: InnerscapeText.eyebrow(),
+                              style: InnerscapeText.eyebrow(color: context.colors.mauve),
                             ),
                             const SizedBox(height: 8),
                             Text(

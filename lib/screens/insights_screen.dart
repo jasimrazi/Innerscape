@@ -26,9 +26,9 @@ class InsightsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Velocity & Patterns',
-                        style: InnerscapeText.eyebrow()),
+                        style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                     const SizedBox(height: 2),
-                    Text('Insights', style: InnerscapeText.heading(size: 22)),
+                    Text('Insights', style: InnerscapeText.heading(size: 22, color: context.colors.ink)),
                   ],
                 ),
               ),
@@ -43,10 +43,10 @@ class InsightsScreen extends StatelessWidget {
                       const SizedBox(height: 14),
                       Text(
                         '${provider.streak}',
-                        style: InnerscapeText.heading(size: 28),
+                        style: InnerscapeText.heading(size: 28, color: context.colors.ink),
                       ),
                       const SizedBox(height: 2),
-                      Text('Day streak', style: InnerscapeText.eyebrow()),
+                      Text('Day streak', style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                     ],
                   ),
                 ),
@@ -62,10 +62,10 @@ class InsightsScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             Text('${provider.longestStreak}',
-                                style: InnerscapeText.heading(size: 22)),
+                                style: InnerscapeText.heading(size: 22, color: context.colors.ink)),
                             const SizedBox(height: 4),
                             Text('Longest streak',
-                                style: InnerscapeText.eyebrow()),
+                                style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                           ],
                         ),
                       ),
@@ -76,10 +76,10 @@ class InsightsScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             Text('${provider.totalEntries}',
-                                style: InnerscapeText.heading(size: 22)),
+                                style: InnerscapeText.heading(size: 22, color: context.colors.ink)),
                             const SizedBox(height: 4),
                             Text('Total entries',
-                                style: InnerscapeText.eyebrow()),
+                                style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                           ],
                         ),
                       ),
@@ -96,7 +96,7 @@ class InsightsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Focus vs. Fatigue',
-                          style: InnerscapeText.eyebrow()),
+                          style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                       const SizedBox(height: 4),
                       Text(
                         'This week',
@@ -145,7 +145,7 @@ class InsightsScreen extends StatelessWidget {
                           const Text('🔮', style: TextStyle(fontSize: 18)),
                           const SizedBox(width: 8),
                           Text('Weekly Insights',
-                              style: InnerscapeText.eyebrow()),
+                              style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -169,7 +169,7 @@ class InsightsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("This week's aura",
-                          style: InnerscapeText.eyebrow()),
+                          style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                       const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

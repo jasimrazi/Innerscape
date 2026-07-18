@@ -23,9 +23,9 @@ class SettingsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Your space', style: InnerscapeText.eyebrow()),
+                  Text('Your space', style: InnerscapeText.eyebrow(color: context.colors.mauve)),
                   const SizedBox(height: 2),
-                  Text('Settings', style: InnerscapeText.heading(size: 22)),
+                  Text('Settings', style: InnerscapeText.heading(size: 22, color: context.colors.ink)),
                 ],
               ),
             ),
