@@ -37,6 +37,27 @@ class JournalEntry {
         hueShift: (map['hue_shift'] as num).toDouble(),
         moodValue: (map['mood_value'] as num).toDouble(),
       );
+
+  Map<String, dynamic> toSupabaseMap(String userId) => {
+        'id': id,
+        'user_id': userId,
+        'timestamp': timestamp.millisecondsSinceEpoch,
+        'date': date,
+        'win': win,
+        'goal': goal,
+        'hue_shift': hueShift,
+        'mood_value': moodValue,
+      };
+
+  factory JournalEntry.fromSupabaseMap(Map<String, dynamic> map) => JournalEntry(
+        id: map['id'] as String,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+        date: map['date'] as String,
+        win: map['win'] as String,
+        goal: map['goal'] as String,
+        hueShift: (map['hue_shift'] as num).toDouble(),
+        moodValue: (map['mood_value'] as num).toDouble(),
+      );
 }
 
 /// Sample data — mirrors the entries in the design.html prototype.

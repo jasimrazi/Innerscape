@@ -4,6 +4,7 @@ import '../models/journal_entry.dart';
 import '../database/database_helper.dart';
 import '../database/daos/entries_dao.dart';
 import '../database/daos/settings_dao.dart';
+import '../services/sync_service.dart';
 
 class JournalProvider extends ChangeNotifier {
   final EntriesDao _entriesDao;
@@ -59,6 +60,10 @@ class JournalProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Syncing state
+  bool _isSyncing = false;
+  bool get isSyncing => _isSyncing;
+
   double _ringHue = 0;
   double get ringHue => _ringHue;
 
@@ -99,9 +104,33 @@ class JournalProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Sync local SQLite database with Supabase cloud.
+  Future<void> syncWithCloud(String userId) async {
+    _isSyncing = true;
+    notifyListeners();
+
+    try {
+      final merged = await SyncService.syncOnLogin(userId, _entries);
+      
+      // Update local SQLite with all merged entries
+      for (final entry in merged) {
+        await _entriesDao.insert(entry);
+      }
+
+      // Reload from local database
+      _entries = await _entriesDao.getAll();
+      _updateStreaks();
+    } catch (e) {
+      debugPrint('Sync failed: $e');
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
+  }
+
   // Add new entry and update stats
   /// Returns true if saved, false if inputs were empty.
-  bool saveEntry(String winText, String goalText) {
+  bool saveEntry(String winText, String goalText, {String? userId}) {
     // Reject empty entries
     if (winText.trim().isEmpty && goalText.trim().isEmpty) {
       return false;
@@ -132,6 +161,13 @@ class JournalProvider extends ChangeNotifier {
 
     // Save asynchronously to SQLite
     _entriesDao.insert(newEntry);
+
+    // Save asynchronously to Supabase if signed in
+    if (userId != null) {
+      SyncService.upsertEntry(userId, newEntry).catchError((e) {
+        debugPrint('Failed to sync new entry to cloud: $e');
+      });
+    }
 
     // Update streaks
     _updateStreaks();

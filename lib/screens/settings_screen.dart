@@ -76,13 +76,22 @@ class SettingsScreen extends StatelessWidget {
                       label: authProvider.isAuthenticated 
                           ? 'Account: ${authProvider.user?.email}'
                           : 'Cloud Sync & Backup',
-                      trailing: Text(
-                        authProvider.isAuthenticated ? 'Sign Out' : 'Sign In ›',
-                        style: InnerscapeText.body(
-                          size: 13,
-                          color: context.colors.violet,
-                        ),
-                      ),
+                      trailing: provider.isSyncing
+                          ? SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: context.colors.violet,
+                              ),
+                            )
+                          : Text(
+                              authProvider.isAuthenticated ? 'Sign Out' : 'Sign In ›',
+                              style: InnerscapeText.body(
+                                size: 13,
+                                color: context.colors.violet,
+                              ),
+                            ),
                       onTap: () {
                         if (authProvider.isAuthenticated) {
                           authProvider.signOut();

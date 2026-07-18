@@ -32,12 +32,34 @@ void main() async {
   );
 }
 
-class InnerscapeApp extends StatelessWidget {
+class InnerscapeApp extends StatefulWidget {
   const InnerscapeApp({super.key});
 
   @override
+  State<InnerscapeApp> createState() => _InnerscapeAppState();
+}
+
+class _InnerscapeAppState extends State<InnerscapeApp> {
+  String? _lastSyncedUserId;
+
+  @override
   Widget build(BuildContext context) {
-    final isLight = context.watch<JournalProvider>().lightMode;
+    final journal = context.watch<JournalProvider>();
+    final isLight = journal.lightMode;
+    final auth = context.watch<AuthProvider>();
+
+    // Sync local with cloud once on sign-in
+    if (auth.isAuthenticated && auth.user?.id != null) {
+      final currentUserId = auth.user!.id;
+      if (currentUserId != _lastSyncedUserId) {
+        _lastSyncedUserId = currentUserId;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          journal.syncWithCloud(currentUserId);
+        });
+      }
+    } else if (!auth.isAuthenticated) {
+      _lastSyncedUserId = null;
+    }
     
     // Dynamically update status bar icon colors
     SystemChrome.setSystemUIOverlayStyle(

@@ -6,6 +6,7 @@ import '../widgets/aura_ring.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/mood_slider.dart';
 import '../providers/journal_provider.dart';
+import '../providers/auth_provider.dart';
 
 class TodayScreen extends StatefulWidget {
   const TodayScreen({super.key});
@@ -89,7 +90,8 @@ class _TodayScreenState extends State<TodayScreen>
   void _save() {
     FocusScope.of(context).unfocus();
     final provider = context.read<JournalProvider>();
-    final saved = provider.saveEntry(_winCtrl.text, _goalCtrl.text);
+    final auth = context.read<AuthProvider>();
+    final saved = provider.saveEntry(_winCtrl.text, _goalCtrl.text, userId: auth.user?.id);
 
     if (!saved) {
       // Entry was empty — don't clear or show toast
