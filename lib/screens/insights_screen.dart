@@ -13,6 +13,8 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
+  bool _isInsightExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -248,16 +250,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
       case GroqInsightState.loaded:
         final insight = provider.groqInsight!;
+        final hasDetails =
+            insight.overallMood.isNotEmpty || insight.positiveThemes.isNotEmpty;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (insight.overallMood.isNotEmpty) ...[
-              Text(
-                'MOOD: ${insight.overallMood.toUpperCase()}',
-                style: InnerscapeText.eyebrow(color: context.colors.mauve),
-              ),
-              const SizedBox(height: 6),
-            ],
+            // Growth Area shown initially
             Text(
               insight.growthArea.isNotEmpty
                   ? insight.growthArea
@@ -267,34 +266,93 @@ class _InsightsScreenState extends State<InsightsScreen> {
                 color: context.colors.ink,
               ),
             ),
-            if (insight.positiveThemes.isNotEmpty) ...[
+
+            if (hasDetails) ...[
               const SizedBox(height: 10),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: insight.positiveThemes.map((theme) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isInsightExpanded = !_isInsightExpanded;
+                  });
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _isInsightExpanded ? 'Hide details' : 'View details',
+                      style: InnerscapeText.eyebrow(color: context.colors.mauve),
                     ),
-                    decoration: BoxDecoration(
-                      color: context.colors.glassStrong,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: context.colors.lineStrong,
-                      ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      _isInsightExpanded
+                          ? Icons.keyboard_arrow_up_rounded
+                          : Icons.keyboard_arrow_down_rounded,
+                      size: 16,
+                      color: context.colors.mauve,
                     ),
-                    child: Text(
-                      theme,
-                      style: InnerscapeText.body(
-                        size: 11,
-                        color: context.colors.mauve,
-                        weight: FontWeight.w500,
-                      ),
-                    ),
-                  );
-                }).toList(),
+                  ],
+                ),
+              ),
+              AnimatedCrossFade(
+                firstChild: const SizedBox.shrink(),
+                secondChild: Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (insight.overallMood.isNotEmpty) ...[
+                        Text(
+                          'MOOD: ${insight.overallMood.toUpperCase()}',
+                          style: InnerscapeText.eyebrow(
+                            color: context.colors.mauve,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      if (insight.positiveThemes.isNotEmpty) ...[
+                        Text(
+                          'POSITIVE THEMES',
+                          style: InnerscapeText.eyebrow(
+                            color: context.colors.mauve,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: insight.positiveThemes.map((theme) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.colors.glassStrong,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: context.colors.lineStrong,
+                                ),
+                              ),
+                              child: Text(
+                                theme,
+                                style: InnerscapeText.body(
+                                  size: 11,
+                                  color: context.colors.mauve,
+                                  weight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                crossFadeState: _isInsightExpanded
+                    ? CrossFadeState.showSecond
+                    : CrossFadeState.showFirst,
+                duration: const Duration(milliseconds: 250),
               ),
             ],
           ],
