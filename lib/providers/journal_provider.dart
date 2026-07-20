@@ -5,10 +5,22 @@ import '../database/database_helper.dart';
 import '../database/daos/entries_dao.dart';
 import '../database/daos/settings_dao.dart';
 import '../services/sync_service.dart';
+import '../services/insight_service.dart';
+
+enum GroqInsightState { idle, loading, loaded, error }
 
 class JournalProvider extends ChangeNotifier {
   final EntriesDao _entriesDao;
   final SettingsDao _settingsDao;
+
+  // Groq AI Insight State
+  WeeklyInsight? _groqInsight;
+  WeeklyInsight? get groqInsight => _groqInsight;
+
+  GroqInsightState _groqInsightState = GroqInsightState.idle;
+  GroqInsightState get groqInsightState => _groqInsightState;
+
+  Set<String> _groqInsightEntryIds = {};
 
   // Navigation State
   int _currentIndex = 0;
@@ -356,6 +368,53 @@ class JournalProvider extends ChangeNotifier {
       }
     }
     return result;
+  }
+
+  /// Returns entries that fall within the target week.
+  List<JournalEntry> _entriesInTargetWeek() {
+    final monday = _targetWeekMonday;
+    return _entries.where((e) {
+      final day = DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day);
+      final diff = day.difference(monday).inDays;
+      return diff >= 0 && diff < 7;
+    }).toList();
+  }
+
+  /// Fetches a Groq insight if needed (cached per set of entry IDs).
+  Future<void> refreshGroqInsight({bool force = false}) async {
+    if (_groqInsightState == GroqInsightState.loading) return;
+
+    final targetEntries = _entriesInTargetWeek();
+    final currentIds = targetEntries.map((e) => e.id).toSet();
+
+    if (!force &&
+        _groqInsightState != GroqInsightState.idle &&
+        currentIds.length == _groqInsightEntryIds.length &&
+        currentIds.containsAll(_groqInsightEntryIds)) {
+      return; // Already attempted or loaded for these exact entries
+    }
+
+    if (targetEntries.isEmpty) {
+      _groqInsight = null;
+      _groqInsightState = GroqInsightState.idle;
+      _groqInsightEntryIds = {};
+      notifyListeners();
+      return;
+    }
+
+    _groqInsightState = GroqInsightState.loading;
+    _groqInsightEntryIds = currentIds;
+    notifyListeners();
+
+    final result = await InsightService.generateInsight(targetEntries);
+
+    if (result != null) {
+      _groqInsight = result;
+      _groqInsightState = GroqInsightState.loaded;
+    } else {
+      _groqInsightState = GroqInsightState.error;
+    }
+    notifyListeners();
   }
 
   // Breathing Guide State

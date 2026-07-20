@@ -5,8 +5,23 @@ import '../widgets/glass_card.dart';
 import 'package:provider/provider.dart';
 import '../providers/journal_provider.dart';
 
-class InsightsScreen extends StatelessWidget {
+class InsightsScreen extends StatefulWidget {
   const InsightsScreen({super.key});
+
+  @override
+  State<InsightsScreen> createState() => _InsightsScreenState();
+}
+
+class _InsightsScreenState extends State<InsightsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<JournalProvider>().refreshGroqInsight();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -149,18 +164,26 @@ class InsightsScreen extends StatelessWidget {
                         children: [
                           const Text('🔮', style: TextStyle(fontSize: 18)),
                           const SizedBox(width: 8),
-                          Text('Weekly Insights',
-                              style: InnerscapeText.eyebrow(color: context.colors.mauve)),
+                          Expanded(
+                            child: Text('Weekly Insights',
+                                style: InnerscapeText.eyebrow(color: context.colors.mauve)),
+                          ),
+                          if (provider.groqInsightState == GroqInsightState.loaded ||
+                              provider.groqInsightState == GroqInsightState.error)
+                            GestureDetector(
+                              onTap: () => context
+                                  .read<JournalProvider>()
+                                  .refreshGroqInsight(force: true),
+                              child: Icon(
+                                Icons.refresh_rounded,
+                                size: 16,
+                                color: context.colors.mauve.withValues(alpha: 0.6),
+                              ),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Text(
-                        provider.weeklyInsightText,
-                        style: InnerscapeText.serifItalic(
-                          size: 15.5,
-                          color: context.colors.ink,
-                        ),
-                      ),
+                      _buildInsightBody(context, provider),
                     ],
                   ),
                 ),
@@ -197,6 +220,64 @@ class InsightsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildInsightBody(BuildContext context, JournalProvider provider) {
+    switch (provider.groqInsightState) {
+      case GroqInsightState.loading:
+        return Row(
+          children: [
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 1.5,
+                color: context.colors.mauve,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Reading your week...',
+              style: InnerscapeText.serifItalic(
+                size: 14,
+                color: context.colors.mauve,
+              ),
+            ),
+          ],
+        );
+
+      case GroqInsightState.loaded:
+        final insight = provider.groqInsight!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              insight.insight,
+              style: InnerscapeText.serifItalic(
+                size: 15.5,
+                color: context.colors.ink,
+              ),
+            ),
+            if (insight.theme.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                'THEME: ${insight.theme.toUpperCase()}',
+                style: InnerscapeText.eyebrow(color: context.colors.mauve),
+              ),
+            ],
+          ],
+        );
+
+      case GroqInsightState.error:
+      case GroqInsightState.idle:
+        return Text(
+          provider.weeklyInsightText,
+          style: InnerscapeText.serifItalic(
+            size: 15.5,
+            color: context.colors.ink,
+          ),
+        );
+    }
   }
 }
 
