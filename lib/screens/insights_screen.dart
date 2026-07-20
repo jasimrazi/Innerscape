@@ -251,18 +251,50 @@ class _InsightsScreenState extends State<InsightsScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (insight.overallMood.isNotEmpty) ...[
+              Text(
+                'MOOD: ${insight.overallMood.toUpperCase()}',
+                style: InnerscapeText.eyebrow(color: context.colors.mauve),
+              ),
+              const SizedBox(height: 6),
+            ],
             Text(
-              insight.insight,
+              insight.growthArea.isNotEmpty
+                  ? insight.growthArea
+                  : provider.weeklyInsightText,
               style: InnerscapeText.serifItalic(
                 size: 15.5,
                 color: context.colors.ink,
               ),
             ),
-            if (insight.theme.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(
-                'THEME: ${insight.theme.toUpperCase()}',
-                style: InnerscapeText.eyebrow(color: context.colors.mauve),
+            if (insight.positiveThemes.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: insight.positiveThemes.map((theme) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.colors.glassStrong,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: context.colors.lineStrong,
+                      ),
+                    ),
+                    child: Text(
+                      theme,
+                      style: InnerscapeText.body(
+                        size: 11,
+                        color: context.colors.mauve,
+                        weight: FontWeight.w500,
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ],
           ],
