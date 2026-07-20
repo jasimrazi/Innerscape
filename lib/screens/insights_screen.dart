@@ -11,6 +11,9 @@ class InsightsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<JournalProvider>();
+    final weekData = provider.weeklyFocusFatigue;
+    final auraData = provider.weeklyAuraData;
+
     return Scaffold(
       backgroundColor: context.colors.cream,
       body: SafeArea(
@@ -114,6 +117,8 @@ class InsightsScreen extends StatelessWidget {
                             violet: context.colors.violet,
                             peach: context.colors.peach,
                             mauve: context.colors.mauve,
+                            focus: weekData.focus,
+                            fatigue: weekData.fatigue,
                           ),
                         ),
                       ),
@@ -150,7 +155,7 @@ class InsightsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Your energy peaks after 10 PM. Consider deeper work then.',
+                        provider.weeklyInsightText,
                         style: InnerscapeText.serifItalic(
                           size: 15.5,
                           color: context.colors.ink,
@@ -174,13 +179,13 @@ class InsightsScreen extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _WeekDay(label: 'M', hue: 0, active: true),
-                          _WeekDay(label: 'T', hue: 35, active: true),
-                          _WeekDay(label: 'W', hue: -30, active: true),
-                          _WeekDay(label: 'T', hue: 70, active: true),
-                          _WeekDay(label: 'F', hue: 0, active: false),
-                          _WeekDay(label: 'S', hue: 0, active: false),
-                          _WeekDay(label: 'S', hue: 0, active: false),
+                          _WeekDay(label: 'M', hue: auraData[0].hue, active: auraData[0].active),
+                          _WeekDay(label: 'T', hue: auraData[1].hue, active: auraData[1].active),
+                          _WeekDay(label: 'W', hue: auraData[2].hue, active: auraData[2].active),
+                          _WeekDay(label: 'T', hue: auraData[3].hue, active: auraData[3].active),
+                          _WeekDay(label: 'F', hue: auraData[4].hue, active: auraData[4].active),
+                          _WeekDay(label: 'S', hue: auraData[5].hue, active: auraData[5].active),
+                          _WeekDay(label: 'S', hue: auraData[6].hue, active: auraData[6].active),
                         ],
                       ),
                     ],
@@ -266,42 +271,44 @@ class _FocusFatiguePainter extends CustomPainter {
   final Color violet;
   final Color peach;
   final Color mauve;
+  final List<double?> focus;
+  final List<double?> fatigue;
 
   _FocusFatiguePainter({
     required this.violet,
     required this.peach,
     required this.mauve,
+    required this.focus,
+    required this.fatigue,
   });
 
-  // Hardcoded sample data: Mon–Sun
-  static const _focus = [0.55, 0.72, 0.48, 0.80, 0.65, 0.40, 0.90];
-  static const _fatigue = [0.45, 0.30, 0.60, 0.25, 0.50, 0.70, 0.15];
   static const _days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    final n = _focus.length;
+    final n = focus.length;
     final step = w / (n - 1);
 
     // Draw smooth lines
-    _drawLine(canvas, size, _focus, violet, step, h);
-    _drawLine(canvas, size, _fatigue, peach, step, h);
+    _drawLine(canvas, size, focus, violet, step, h);
+    _drawLine(canvas, size, fatigue, peach, step, h);
 
     // Draw dots
-    _drawDots(canvas, size, _focus, violet, step, h);
-    _drawDots(canvas, size, _fatigue, peach, step, h);
+    _drawDots(canvas, size, focus, violet, step, h);
+    _drawDots(canvas, size, fatigue, peach, step, h);
 
     // Day labels
     final tp = TextPainter(textDirection: TextDirection.ltr);
     for (int i = 0; i < n; i++) {
+      final hasData = focus[i] != null;
       tp.text = TextSpan(
         text: _days[i],
         style: TextStyle(
           fontFamily: 'BricolageGrotesque',
           fontSize: 9,
-          color: mauve,
+          color: hasData ? mauve : mauve.withValues(alpha: 0.4),
         ),
       );
       tp.layout();
@@ -309,7 +316,7 @@ class _FocusFatiguePainter extends CustomPainter {
     }
   }
 
-  void _drawLine(Canvas canvas, Size size, List<double> data, Color color,
+  void _drawLine(Canvas canvas, Size size, List<double?> data, Color color,
       double step, double h) {
     final paint = Paint()
       ..color = color.withValues(alpha: 0.7)
@@ -320,30 +327,38 @@ class _FocusFatiguePainter extends CustomPainter {
 
     final path = Path();
     final chartH = h - 16; // reserve 16px for labels
+    int lastDrawnIdx = -1;
+
     for (int i = 0; i < data.length; i++) {
+      final val = data[i];
+      if (val == null) continue;
+
       final x = i * step;
-      final y = chartH * (1 - data[i]);
-      if (i == 0) {
+      final y = chartH * (1 - val);
+
+      if (lastDrawnIdx == -1 || i != lastDrawnIdx + 1) {
         path.moveTo(x, y);
       } else {
-        // Smooth cubic bezier
-        final prevX = (i - 1) * step;
-        final prevY = chartH * (1 - data[i - 1]);
-        final cp1x = prevX + step / 2;
-        final cp2x = x - step / 2;
+        final prevX = lastDrawnIdx * step;
+        final prevY = chartH * (1 - data[lastDrawnIdx]!);
+        final cp1x = prevX + (x - prevX) / 2;
+        final cp2x = x - (x - prevX) / 2;
         path.cubicTo(cp1x, prevY, cp2x, y, x, y);
       }
+      lastDrawnIdx = i;
     }
     canvas.drawPath(path, paint);
   }
 
-  void _drawDots(Canvas canvas, Size size, List<double> data, Color color,
+  void _drawDots(Canvas canvas, Size size, List<double?> data, Color color,
       double step, double h) {
     final paint = Paint()..color = color;
     final chartH = h - 16;
     for (int i = 0; i < data.length; i++) {
+      final val = data[i];
+      if (val == null) continue;
       canvas.drawCircle(
-        Offset(i * step, chartH * (1 - data[i])),
+        Offset(i * step, chartH * (1 - val)),
         3.5,
         paint,
       );
@@ -351,5 +366,12 @@ class _FocusFatiguePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_FocusFatiguePainter _) => false;
+  bool shouldRepaint(_FocusFatiguePainter oldDelegate) {
+    return oldDelegate.focus != focus ||
+        oldDelegate.fatigue != fatigue ||
+        oldDelegate.violet != violet ||
+        oldDelegate.peach != peach ||
+        oldDelegate.mauve != mauve;
+  }
 }
+

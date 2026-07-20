@@ -246,6 +246,118 @@ class JournalProvider extends ChangeNotifier {
     return longest;
   }
 
+  /// Returns the Monday midnight DateTime for the target week.
+  /// Uses current week if it has entries, otherwise falls back to the week of the most recent entry.
+  DateTime get _targetWeekMonday {
+    final now = DateTime.now();
+    final currentMonday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+
+    if (_entries.isEmpty) return currentMonday;
+
+    // Check if any entry falls in the current calendar week
+    final hasCurrentWeekEntry = _entries.any((e) {
+      final diff = DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day)
+          .difference(currentMonday)
+          .inDays;
+      return diff >= 0 && diff < 7;
+    });
+
+    if (hasCurrentWeekEntry) return currentMonday;
+
+    // Fallback to the Monday of the week of the latest entry
+    final latest = _entries.first.timestamp;
+    return DateTime(latest.year, latest.month, latest.day).subtract(Duration(days: latest.weekday - 1));
+  }
+
+  /// Returns focus and fatigue values for Mon–Sun of the target week.
+  /// Entries that fall on a given day are averaged.
+  /// Days with no entry return null.
+  ({List<double?> focus, List<double?> fatigue}) get weeklyFocusFatigue {
+    final monday = _targetWeekMonday;
+
+    final List<double?> focusList = List.filled(7, null);
+    final List<double?> fatigueList = List.filled(7, null);
+    final List<int> counts = List.filled(7, 0);
+
+    for (final entry in _entries) {
+      final entryDay = DateTime(entry.timestamp.year, entry.timestamp.month, entry.timestamp.day);
+      final diff = entryDay.difference(monday).inDays;
+      if (diff >= 0 && diff < 7) {
+        if (focusList[diff] == null) {
+          focusList[diff] = entry.moodValue;
+        } else {
+          focusList[diff] = focusList[diff]! + entry.moodValue;
+        }
+        counts[diff]++;
+      }
+    }
+
+    for (int i = 0; i < 7; i++) {
+      if (counts[i] > 0 && focusList[i] != null) {
+        final avgFocus = focusList[i]! / counts[i];
+        focusList[i] = avgFocus;
+        fatigueList[i] = 1.0 - avgFocus;
+      }
+    }
+
+    return (focus: focusList, fatigue: fatigueList);
+  }
+
+  /// Generates a short, human-readable weekly insight string from mood data.
+  String get weeklyInsightText {
+    final data = weeklyFocusFatigue;
+    final validFocus = data.focus.whereType<double>().toList();
+
+    if (validFocus.isEmpty) {
+      return 'Start logging to unlock your weekly patterns.';
+    }
+
+    final avg = validFocus.reduce((a, b) => a + b) / validFocus.length;
+    double maxVal = -1.0;
+    int peakDayIdx = -1;
+    for (int i = 0; i < data.focus.length; i++) {
+      final val = data.focus[i];
+      if (val != null && val > maxVal) {
+        maxVal = val;
+        peakDayIdx = i;
+      }
+    }
+
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final peakDayName = peakDayIdx >= 0 ? dayNames[peakDayIdx] : 'one of your days';
+    final entryCount = validFocus.length;
+    final missed = 7 - entryCount;
+
+    if (avg >= 0.75) {
+      return 'Exceptional week — your focus stayed high across $entryCount days. Keep this rhythm.';
+    } else if (avg >= 0.6) {
+      return '$peakDayName was your peak. You\'re in a steady groove — build on that momentum.';
+    } else if (avg >= 0.4) {
+      if (missed > 2) {
+        return 'You logged $entryCount days this week. Even showing up halfway is progress.';
+      }
+      return 'A balanced week. Your energy on $peakDayName stood out — chase more days like that.';
+    } else {
+      return 'Rough week, but you\'re still here. Rest is data too. Tomorrow is a fresh start.';
+    }
+  }
+
+  /// Returns aura data (active status & latest hueShift) for Mon-Sun of target week.
+  List<({bool active, double hue})> get weeklyAuraData {
+    final monday = _targetWeekMonday;
+
+    final result = List.generate(7, (_) => (active: false, hue: 0.0));
+
+    for (final entry in _entries.reversed) {
+      final entryDay = DateTime(entry.timestamp.year, entry.timestamp.month, entry.timestamp.day);
+      final diff = entryDay.difference(monday).inDays;
+      if (diff >= 0 && diff < 7) {
+        result[diff] = (active: true, hue: entry.hueShift);
+      }
+    }
+    return result;
+  }
+
   // Breathing Guide State
   bool _isBreathing = false;
   bool get isBreathing => _isBreathing;
