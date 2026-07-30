@@ -223,6 +223,18 @@ class InnerscapeText {
         fontWeight: weight,
         color: color ?? InnerscapeColors.ink,
       );
+
+  static TextStyle caption({
+    double size = 11,
+    FontWeight weight = FontWeight.w400,
+    Color? color,
+  }) =>
+      TextStyle(
+        fontFamily: 'BricolageGrotesque',
+        fontSize: size,
+        fontWeight: weight,
+        color: color ?? InnerscapeColors.mauve,
+      );
 }
 
 // ── App Theme ─────────────────────────────────────────────────────────────────

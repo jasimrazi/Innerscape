@@ -19,4 +19,8 @@ const List<String> kMigrations = [
     value TEXT NOT NULL
   )
   ''',
+  // Version 3: Add tags column to journal_entries
+  '''
+  ALTER TABLE journal_entries ADD COLUMN tags TEXT NOT NULL DEFAULT ''
+  ''',
 ];

@@ -164,6 +164,24 @@ class _EntryRow extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (entry.tags.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: entry.tags.map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: context.colors.violet.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: InnerscapeText.caption(color: context.colors.violet).copyWith(fontSize: 10, fontWeight: FontWeight.w500),
+                            ),
+                          )).toList(),
+                        ),
+                      ],
                     ],
                   ),
                 ),

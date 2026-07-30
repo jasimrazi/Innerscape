@@ -87,11 +87,14 @@ class _TodayScreenState extends State<TodayScreen>
     );
   }
 
+  final List<String> _selectedTags = [];
+  final _tagController = TextEditingController();
+
   void _save() {
     FocusScope.of(context).unfocus();
     final provider = context.read<JournalProvider>();
     final auth = context.read<AuthProvider>();
-    final saved = provider.saveEntry(_winCtrl.text, _goalCtrl.text, userId: auth.user?.id);
+    final saved = provider.saveEntry(_winCtrl.text, _goalCtrl.text, userId: auth.user?.id, tags: _selectedTags);
 
     if (!saved) {
       // Entry was empty — don't clear or show toast
@@ -101,6 +104,9 @@ class _TodayScreenState extends State<TodayScreen>
 
     _winCtrl.clear();
     _goalCtrl.clear();
+    setState(() {
+      _selectedTags.clear();
+    });
     provider.setMoodValue(0.5);
 
     provider.setShowToast(true);
@@ -114,6 +120,85 @@ class _TodayScreenState extends State<TodayScreen>
         });
       }
     });
+  }
+
+  void _showAddTagDialog(BuildContext context, JournalProvider provider) {
+    _tagController.clear();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.colors.cream,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          20,
+          24,
+          MediaQuery.of(ctx).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Add Tag', style: InnerscapeText.heading(size: 20, color: context.colors.ink)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _tagController,
+              autofocus: true,
+              style: InnerscapeText.body(size: 15, color: context.colors.ink),
+              decoration: InputDecoration(
+                hintText: 'e.g. gratitude, work, health',
+                hintStyle: InnerscapeText.body(size: 15, color: context.colors.hint),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: context.colors.line),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+              onSubmitted: (val) {
+                final tag = val.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9_]'), '');
+                if (tag.isNotEmpty && !_selectedTags.contains(tag) && _selectedTags.length < 3) {
+                  setState(() => _selectedTags.add(tag));
+                }
+                Navigator.pop(ctx);
+              },
+            ),
+            const SizedBox(height: 12),
+            if (provider.allTags.isNotEmpty) ...[
+              Text('Suggestions', style: InnerscapeText.eyebrow(color: context.colors.mauve)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: provider.allTags
+                    .where((t) => !_selectedTags.contains(t))
+                    .take(5)
+                    .map((tag) => GestureDetector(
+                          onTap: () {
+                            if (_selectedTags.length < 3) {
+                              setState(() => _selectedTags.add(tag));
+                            }
+                            Navigator.pop(ctx);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: context.colors.card,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: context.colors.line),
+                            ),
+                            child: Text('#$tag', style: InnerscapeText.caption(color: context.colors.ink)),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -335,6 +420,90 @@ class _TodayScreenState extends State<TodayScreen>
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
                               ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Tags section (Max 3 tags)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+                      child: GlassCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "Tags (max 3)",
+                                  style: InnerscapeText.eyebrow(color: context.colors.mauve),
+                                ),
+                                Text(
+                                  "${_selectedTags.length}/3",
+                                  style: InnerscapeText.caption(color: context.colors.mauve),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                ..._selectedTags.map((tag) => Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: context.colors.violet.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: context.colors.violet.withValues(alpha: 0.3),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            '#$tag',
+                                            style: InnerscapeText.caption(color: context.colors.violet)
+                                                .copyWith(fontWeight: FontWeight.w600),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          GestureDetector(
+                                            onTap: () => setState(() => _selectedTags.remove(tag)),
+                                            child: Icon(Icons.close, size: 14, color: context.colors.violet),
+                                          ),
+                                        ],
+                                      ),
+                                    )),
+                                if (_selectedTags.length < 3)
+                                  GestureDetector(
+                                    onTap: () => _showAddTagDialog(context, provider),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: context.colors.card.withValues(alpha: 0.55),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: context.colors.mauve.withValues(alpha: 0.3),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.add, size: 14, color: context.colors.mauve),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Add tag',
+                                            style: InnerscapeText.caption(color: context.colors.mauve),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ],
                         ),

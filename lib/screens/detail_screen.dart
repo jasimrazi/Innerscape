@@ -93,6 +93,29 @@ class DetailScreen extends StatelessWidget {
                           color: context.colors.mauve,
                         ),
                       ),
+                      if (entry.tags.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          alignment: WrapAlignment.center,
+                          children: entry.tags.map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: context.colors.violet.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: context.colors.violet.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: InnerscapeText.caption(color: context.colors.violet)
+                                  .copyWith(fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                          )).toList(),
+                        ),
+                      ],
                       const SizedBox(height: 18),
 
                       // Win card

@@ -7,6 +7,7 @@ class JournalEntry {
   final String goal;
   final double hueShift; // degrees, for AuraRing color variety
   final double moodValue; // 0.0 to 1.0
+  final List<String> tags;
 
   const JournalEntry({
     required this.id,
@@ -16,6 +17,7 @@ class JournalEntry {
     required this.goal,
     this.hueShift = 0,
     this.moodValue = 0.5,
+    this.tags = const [],
   });
 
   Map<String, dynamic> toMap() => {
@@ -26,6 +28,7 @@ class JournalEntry {
         'goal': goal,
         'hue_shift': hueShift,
         'mood_value': moodValue,
+        'tags': tags.join(','),
       };
 
   factory JournalEntry.fromMap(Map<String, dynamic> map) => JournalEntry(
@@ -36,6 +39,7 @@ class JournalEntry {
         goal: map['goal'] as String,
         hueShift: (map['hue_shift'] as num).toDouble(),
         moodValue: (map['mood_value'] as num).toDouble(),
+        tags: (map['tags'] as String?)?.split(',').where((t) => t.isNotEmpty).toList() ?? const [],
       );
 
   Map<String, dynamic> toSupabaseMap(String userId) => {
@@ -47,6 +51,7 @@ class JournalEntry {
         'goal': goal,
         'hue_shift': hueShift,
         'mood_value': moodValue,
+        'tags': tags.join(','),
       };
 
   factory JournalEntry.fromSupabaseMap(Map<String, dynamic> map) => JournalEntry(
@@ -57,6 +62,7 @@ class JournalEntry {
         goal: map['goal'] as String,
         hueShift: (map['hue_shift'] as num).toDouble(),
         moodValue: (map['mood_value'] as num).toDouble(),
+        tags: (map['tags'] as String?)?.split(',').where((t) => t.isNotEmpty).toList() ?? const [],
       );
 }
 

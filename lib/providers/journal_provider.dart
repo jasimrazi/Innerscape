@@ -140,9 +140,22 @@ class JournalProvider extends ChangeNotifier {
     }
   }
 
+  /// All unique tags used across entries, sorted by frequency
+  List<String> get allTags {
+    final tagCount = <String, int>{};
+    for (final entry in _entries) {
+      for (final tag in entry.tags) {
+        tagCount[tag] = (tagCount[tag] ?? 0) + 1;
+      }
+    }
+    final sorted = tagCount.keys.toList()
+      ..sort((a, b) => tagCount[b]!.compareTo(tagCount[a]!));
+    return sorted;
+  }
+
   // Add new entry and update stats
   /// Returns true if saved, false if inputs were empty.
-  bool saveEntry(String winText, String goalText, {String? userId}) {
+  bool saveEntry(String winText, String goalText, {String? userId, List<String> tags = const []}) {
     // Reject empty entries
     if (winText.trim().isEmpty && goalText.trim().isEmpty) {
       return false;
@@ -158,6 +171,8 @@ class JournalProvider extends ChangeNotifier {
     // Format: "Thursday, July 9"
     final dateStr = "${days[now.weekday % 7]}, ${months[now.month - 1]} ${now.day}";
 
+    final trimmedTags = tags.map((t) => t.trim().toLowerCase()).where((t) => t.isNotEmpty).take(3).toList();
+
     final newEntry = JournalEntry(
       id: now.toIso8601String(),
       timestamp: now,
@@ -166,6 +181,7 @@ class JournalProvider extends ChangeNotifier {
       goal: goalText.trim(),
       hueShift: _ringHue,
       moodValue: _moodValue,
+      tags: trimmedTags,
     );
 
     // Save to memory
