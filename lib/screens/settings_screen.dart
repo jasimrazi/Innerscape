@@ -5,7 +5,9 @@ import '../providers/journal_provider.dart';
 import '../providers/auth_provider.dart';
 import 'auth_screen.dart';
 
+import '../models/journal_entry.dart';
 import '../services/notification_service.dart';
+import '../services/export_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,6 +19,29 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   TimeOfDay _reminderTime = const TimeOfDay(hour: 20, minute: 0);
   bool _reminderEnabled = false;
+  bool _isExporting = false;
+
+  Future<void> _exportPdf(List<JournalEntry> entries) async {
+    if (entries.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No journal entries to export yet.')),
+      );
+      return;
+    }
+
+    setState(() => _isExporting = true);
+    try {
+      await ExportService.exportAndShare(entries);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
+  }
 
   @override
   void initState() {
@@ -166,6 +191,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           );
                         }
                       },
+                    ),
+                    const _Divider(),
+                    _SettingsRow(
+                      label: 'Export Journal as PDF',
+                      subtitle: 'Clean print-friendly PDF (${provider.entries.length} entries)',
+                      trailing: _isExporting
+                          ? SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: context.colors.violet,
+                              ),
+                            )
+                          : Icon(
+                              Icons.picture_as_pdf_outlined,
+                              size: 18,
+                              color: context.colors.violet,
+                            ),
+                      onTap: _isExporting ? null : () => _exportPdf(provider.entries),
                     ),
                     const _Divider(),
                     _SettingsRow(
