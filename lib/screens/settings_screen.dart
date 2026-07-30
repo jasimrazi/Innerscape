@@ -5,8 +5,80 @@ import '../providers/journal_provider.dart';
 import '../providers/auth_provider.dart';
 import 'auth_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+import '../services/notification_service.dart';
+
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  TimeOfDay _reminderTime = const TimeOfDay(hour: 20, minute: 0);
+  bool _reminderEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReminderSettings();
+  }
+
+  Future<void> _loadReminderSettings() async {
+    final time = await NotificationService.getSavedTime();
+    final enabled = await NotificationService.isEnabled();
+    if (mounted) {
+      setState(() {
+        _reminderTime = time;
+        _reminderEnabled = enabled;
+      });
+    }
+  }
+
+  Future<void> _toggleReminder(bool enabled) async {
+    if (enabled) {
+      final granted = await NotificationService.requestPermission();
+      if (!granted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Notification permission denied')),
+          );
+        }
+        return;
+      }
+      await NotificationService.scheduleDailyReminder(_reminderTime);
+    } else {
+      await NotificationService.cancelReminder();
+    }
+    if (mounted) {
+      setState(() => _reminderEnabled = enabled);
+    }
+  }
+
+  Future<void> _pickReminderTime(BuildContext context) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _reminderTime,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.dark(
+            primary: context.colors.violet,
+            onPrimary: Colors.white,
+            surface: context.colors.card,
+            onSurface: context.colors.ink,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    if (picked != null && mounted) {
+      setState(() => _reminderTime = picked);
+      if (_reminderEnabled) {
+        await NotificationService.scheduleDailyReminder(picked);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,34 +107,27 @@ class SettingsScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _SettingsRow(
-                      label: 'Evening reminder',
-                      trailing: Text(
-                        '8:00 PM',
-                        style: InnerscapeText.body(
-                          size: 13,
-                          color: context.colors.mauve,
-                        ),
-                      ),
-                    ),
-                    const _Divider(),
-                    _SettingsRow(
-                      label: 'Reminder sound',
-                      trailing: Text(
-                        'Soft chime',
-                        style: InnerscapeText.body(
-                          size: 13,
-                          color: context.colors.mauve,
-                        ),
-                      ),
-                    ),
-                    const _Divider(),
-                    _SettingsRow(
-                      label: 'Reminders',
+                      label: 'Daily Reminder',
+                      subtitle: _reminderEnabled ? 'Every day at ${_reminderTime.format(context)}' : 'Off',
                       trailing: _Toggle(
-                        value: provider.remindersOn,
-                        onChanged: (v) => provider.setRemindersOn(v),
+                        value: _reminderEnabled,
+                        onChanged: (v) => _toggleReminder(v),
                       ),
                     ),
+                    if (_reminderEnabled) ...[
+                      const _Divider(),
+                      _SettingsRow(
+                        label: 'Reminder Time',
+                        trailing: Text(
+                          _reminderTime.format(context),
+                          style: InnerscapeText.body(
+                            size: 13,
+                            color: context.colors.violet,
+                          ).copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        onTap: () => _pickReminderTime(context),
+                      ),
+                    ],
                     const _Divider(),
                     _SettingsRow(
                       label: 'Appearance — Light',
@@ -112,9 +177,7 @@ class SettingsScreen extends StatelessWidget {
                           color: context.colors.mauve,
                         ),
                       ),
-                      onTap: () {
-                        // TODO: implement about screen
-                      },
+                      onTap: () {},
                     ),
                     const Spacer(),
                     Center(
@@ -142,9 +205,10 @@ class SettingsScreen extends StatelessWidget {
 
 class _SettingsRow extends StatelessWidget {
   final String label;
+  final String? subtitle;
   final Widget trailing;
   final VoidCallback? onTap;
-  const _SettingsRow({required this.label, required this.trailing, this.onTap});
+  const _SettingsRow({required this.label, this.subtitle, required this.trailing, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -154,12 +218,27 @@ class _SettingsRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: InnerscapeText.serifItalic(
-                size: 15,
-                color: context.colors.ink,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: InnerscapeText.serifItalic(
+                    size: 15,
+                    color: context.colors.ink,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: InnerscapeText.caption(
+                      size: 11.5,
+                      color: context.colors.mauve,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           trailing,

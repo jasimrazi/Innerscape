@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'services/supabase_service.dart';
+import 'services/notification_service.dart';
 import 'providers/auth_provider.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -17,6 +18,9 @@ void main() async {
   
   // Safely initialize Supabase
   await SupabaseService.initialize();
+
+  // Initialize Notification service
+  await NotificationService.initialize();
 
   final journalProvider = JournalProvider();
   await journalProvider.init();
