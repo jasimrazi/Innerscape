@@ -458,4 +458,67 @@ class JournalProvider extends ChangeNotifier {
     _showToast = val;
     notifyListeners();
   }
+
+  // ── Long-term Trends Analytics ──────────────────────────────────────────────
+  List<({DateTime date, double mood})> moodTrendData(int days) {
+    final now = DateTime.now();
+    final todayMidnight = DateTime(now.year, now.month, now.day);
+    final cutoff = todayMidnight.subtract(Duration(days: days - 1));
+
+    final filtered = _entries
+        .where((e) => e.timestamp.isAfter(cutoff) || e.timestamp.isAtSameMomentAs(cutoff))
+        .map((e) => (date: e.timestamp, mood: e.moodValue))
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+
+    return filtered;
+  }
+
+  Map<String, int> get moodDistribution {
+    const labels = ['Drained', 'Mellow', 'Calm', 'Bright', 'Radiant'];
+    final dist = {for (final l in labels) l: 0};
+    for (final e in _entries) {
+      final idx = (e.moodValue * 4).round().clamp(0, 4);
+      dist[labels[idx]] = dist[labels[idx]]! + 1;
+    }
+    return dist;
+  }
+
+  double get monthlyConsistency {
+    final now = DateTime.now();
+    final daysElapsed = now.day;
+    final thisMonthCount = _entries.where((e) =>
+      e.timestamp.year == now.year && e.timestamp.month == now.month
+    ).map((e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day)).toSet().length;
+
+    return daysElapsed > 0 ? (thisMonthCount / daysElapsed).clamp(0.0, 1.0) : 0.0;
+  }
+
+  double get averageMoodThisMonth {
+    final now = DateTime.now();
+    final monthEntries = _entries.where((e) =>
+      e.timestamp.year == now.year && e.timestamp.month == now.month
+    ).toList();
+    if (monthEntries.isEmpty) return 0.5;
+    final sum = monthEntries.map((e) => e.moodValue).reduce((a, b) => a + b);
+    return sum / monthEntries.length;
+  }
+
+  double get averageMoodLastMonth {
+    final now = DateTime.now();
+    final lastMonthDate = DateTime(now.year, now.month - 1);
+    final entries = _entries.where((e) =>
+      e.timestamp.year == lastMonthDate.year && e.timestamp.month == lastMonthDate.month
+    ).toList();
+    if (entries.isEmpty) return 0.5;
+    final sum = entries.map((e) => e.moodValue).reduce((a, b) => a + b);
+    return sum / entries.length;
+  }
+
+  int get moodTrend {
+    final diff = averageMoodThisMonth - averageMoodLastMonth;
+    if (diff > 0.05) return 1;
+    if (diff < -0.05) return -1;
+    return 0;
+  }
 }

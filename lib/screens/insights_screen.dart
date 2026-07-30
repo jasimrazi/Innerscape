@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/aura_ring.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/mood_trend_chart.dart';
+import '../widgets/mood_distribution_chart.dart';
+import '../widgets/consistency_ring.dart';
 import 'package:provider/provider.dart';
 import '../providers/journal_provider.dart';
 
@@ -217,11 +220,130 @@ class _InsightsScreenState extends State<InsightsScreen> {
                   ),
                 ),
               ),
+
+              // ── 30-Day Trends Section ─────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+                child: GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '30-Day Mood Trend',
+                            style: InnerscapeText.eyebrow(color: context.colors.mauve),
+                          ),
+                          Text(
+                            'Fixed 30 Days',
+                            style: InnerscapeText.caption(size: 10, color: context.colors.mauve),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      MoodTrendChart(data: provider.moodTrendData(30), days: 30),
+                    ],
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Donut chart
+                    Expanded(
+                      flex: 3,
+                      child: GlassCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Mood Distribution',
+                              style: InnerscapeText.eyebrow(color: context.colors.mauve),
+                            ),
+                            const SizedBox(height: 10),
+                            MoodDistributionChart(distribution: provider.moodDistribution),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    // Consistency + Avg Mood
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        children: [
+                          GlassCard(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Consistency',
+                                  style: InnerscapeText.eyebrow(color: context.colors.mauve),
+                                ),
+                                const SizedBox(height: 8),
+                                ConsistencyRing(progress: provider.monthlyConsistency, size: 64),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'this month',
+                                  style: InnerscapeText.caption(size: 10, color: context.colors.mauve),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          GlassCard(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Avg Mood',
+                                  style: InnerscapeText.eyebrow(color: context.colors.mauve),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _getMoodEmoji(provider.averageMoodThisMonth),
+                                      style: const TextStyle(fontSize: 22),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      provider.moodTrend == 1
+                                          ? Icons.trending_up_rounded
+                                          : provider.moodTrend == -1
+                                              ? Icons.trending_down_rounded
+                                              : Icons.trending_flat_rounded,
+                                      size: 18,
+                                      color: provider.moodTrend == 1
+                                          ? const Color(0xFF4DB6AC)
+                                          : provider.moodTrend == -1
+                                              ? const Color(0xFFE57373)
+                                              : context.colors.mauve,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  String _getMoodEmoji(double moodValue) {
+    const emojis = ['😔', '😐', '😌', '😊', '✨'];
+    return emojis[(moodValue * 4).round().clamp(0, 4)];
   }
 
   Widget _buildInsightBody(BuildContext context, JournalProvider provider) {
