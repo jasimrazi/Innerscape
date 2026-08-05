@@ -27,45 +27,50 @@ class MoodDistributionChart extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      height: 120,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 80),
       child: Row(
         children: [
           SizedBox(
-            width: 100,
-            height: 100,
+            width: 68,
+            height: 68,
             child: CustomPaint(
               painter: _DonutPainter(distribution: distribution, total: total),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: distribution.entries.where((e) => e.value > 0).map((e) {
                 final pct = (e.value / total * 100).round();
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  padding: const EdgeInsets.symmetric(vertical: 1.5),
                   child: Row(
                     children: [
                       Container(
-                        width: 8,
-                        height: 8,
+                        width: 7,
+                        height: 7,
                         decoration: BoxDecoration(
                           color: _colors[e.key],
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        e.key,
-                        style: InnerscapeText.body(size: 11, color: context.colors.ink),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          e.key,
+                          style: InnerscapeText.body(size: 10, color: context.colors.ink),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 4),
                       Text(
                         '$pct%',
-                        style: InnerscapeText.caption(size: 11, color: context.colors.mauve)
+                        style: InnerscapeText.caption(size: 10, color: context.colors.mauve)
                             .copyWith(fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -89,8 +94,8 @@ class _DonutPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 4;
-    const strokeWidth = 14.0;
+    final radius = size.width / 2 - 2;
+    const strokeWidth = 10.0;
     var startAngle = -pi / 2;
 
     final colors = {
@@ -113,7 +118,7 @@ class _DonutPainter extends CustomPainter {
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius - strokeWidth / 2),
         startAngle,
-        sweep > 0.1 ? sweep - 0.04 : sweep, // Small gap between segments
+        sweep > 0.1 ? sweep - 0.04 : sweep,
         false,
         paint,
       );
