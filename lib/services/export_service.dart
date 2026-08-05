@@ -2,16 +2,25 @@ import 'dart:io';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/journal_entry.dart';
 
 class ExportService {
-  static const _moodEmojis = ['😔', '😐', '😌', '😊', '✨'];
   static const _moodLabels = ['Drained', 'Mellow', 'Calm', 'Bright', 'Radiant'];
 
   /// Generates a clean white, print-friendly PDF file of all journal entries.
   static Future<File> generatePdf(List<JournalEntry> entries) async {
-    final pdf = pw.Document();
+    // Load Unicode-compatible fonts
+    final baseFont = await PdfGoogleFonts.robotoRegular();
+    final boldFont = await PdfGoogleFonts.robotoBold();
+
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: baseFont,
+        bold: boldFont,
+      ),
+    );
 
     final sortedEntries = List<JournalEntry>.from(entries)
       ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
@@ -90,7 +99,6 @@ class ExportService {
 
   static pw.Widget _buildEntryBlock(JournalEntry entry) {
     final idx = (entry.moodValue * 4).round().clamp(0, 4);
-    final moodEmoji = _moodEmojis[idx];
     final moodLabel = _moodLabels[idx];
 
     return pw.Container(
@@ -119,8 +127,8 @@ class ExportService {
                   border: pw.Border.all(color: PdfColors.grey400, width: 0.5),
                 ),
                 child: pw.Text(
-                  '$moodEmoji $moodLabel',
-                  style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey900),
+                  'Mood: $moodLabel',
+                  style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColors.grey900),
                 ),
               ),
             ],
