@@ -93,17 +93,12 @@ class JournalProvider extends ChangeNotifier {
         _settingsDao = SettingsDao(DatabaseHelper.instance);
 
   /// Initializes the provider by loading entries and settings from the database.
-  /// Seeds sample data if the database is empty.
   Future<void> init() async {
-    _entries = await _entriesDao.getAll();
+    // Purge any residual sample/dummy entries from previous versions
+    final db = await DatabaseHelper.instance.database;
+    await db.delete('journal_entries', where: "id LIKE 'sample_%'");
 
-    // Seed sample data on first run
-    if (_entries.isEmpty) {
-      for (final entry in kSampleEntries) {
-        await _entriesDao.insert(entry);
-      }
-      _entries = await _entriesDao.getAll();
-    }
+    _entries = await _entriesDao.getAll();
 
     // Load settings from database
     final settings = await _settingsDao.getAll();
