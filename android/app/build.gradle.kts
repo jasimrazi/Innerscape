@@ -33,6 +33,33 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    applicationVariants.all {
+        val variant = this
+        val versionName = variant.versionName
+        val appName = "innerscape"
+        val customName = "${appName}_${versionName}.apk"
+
+        variant.outputs.all {
+            val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output?.outputFileName = customName
+        }
+
+        assembleProvider.configure {
+            doLast {
+                val flutterApkDir = project.layout.buildDirectory.dir("outputs/flutter-apk").get().asFile
+                val apkOutputDir = variant.packageApplicationProvider.get().outputDirectory.get().asFile
+                val apkFile = File(apkOutputDir, customName)
+                if (apkFile.exists()) {
+                    project.copy {
+                        from(apkFile)
+                        into(flutterApkDir)
+                        rename { customName }
+                    }
+                }
+            }
+        }
+    }
 }
 
 kotlin {
