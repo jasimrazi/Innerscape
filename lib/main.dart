@@ -13,17 +13,33 @@ import 'providers/journal_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Load environment variables from .env
-  await dotenv.load(fileName: ".env");
-  
-  // Safely initialize Supabase
-  await SupabaseService.initialize();
+  // Load environment variables safely
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("Failed to load .env: $e");
+  }
 
-  // Initialize Notification service
-  await NotificationService.initialize();
+  // Safely initialize Supabase
+  try {
+    await SupabaseService.initialize();
+  } catch (e) {
+    debugPrint("Failed to init Supabase: $e");
+  }
+
+  // Initialize Notification service safely
+  try {
+    await NotificationService.initialize();
+  } catch (e) {
+    debugPrint("Failed to init NotificationService: $e");
+  }
 
   final journalProvider = JournalProvider();
-  await journalProvider.init();
+  try {
+    await journalProvider.init();
+  } catch (e) {
+    debugPrint("Failed to init JournalProvider: $e");
+  }
 
   runApp(
     MultiProvider(
