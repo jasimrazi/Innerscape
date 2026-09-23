@@ -1,3 +1,6 @@
+import 'package:encrypt/encrypt.dart' as enc;
+import '../services/encryption_service.dart';
+
 /// Journal entry model with support for id, timestamp, mood, and aura ring hue.
 class JournalEntry {
   final String id;
@@ -64,4 +67,40 @@ class JournalEntry {
         moodValue: (map['mood_value'] as num).toDouble(),
         tags: (map['tags'] as String?)?.split(',').where((t) => t.isNotEmpty).toList() ?? const [],
       );
+
+  /// Encrypts sensitive fields (win, goal, tags) before transmitting to Supabase.
+  Map<String, dynamic> toEncryptedSupabaseMap(String userId, enc.Key key) => {
+        'id': id,
+        'user_id': userId,
+        'timestamp': timestamp.millisecondsSinceEpoch,
+        'date': date,
+        'win': EncryptionService.encrypt(win, key),
+        'goal': EncryptionService.encrypt(goal, key),
+        'hue_shift': hueShift,
+        'mood_value': moodValue,
+        'tags': EncryptionService.encrypt(tags.join(','), key),
+      };
+
+  /// Decrypts sensitive fields received from Supabase.
+  /// Safely falls back to plaintext if the row was stored unencrypted.
+  factory JournalEntry.fromEncryptedSupabaseMap(Map<String, dynamic> map, enc.Key key) {
+    final rawWin = map['win'] as String? ?? '';
+    final rawGoal = map['goal'] as String? ?? '';
+    final rawTags = map['tags'] as String? ?? '';
+
+    final decryptedWin = EncryptionService.decrypt(rawWin, key);
+    final decryptedGoal = EncryptionService.decrypt(rawGoal, key);
+    final decryptedTags = EncryptionService.decrypt(rawTags, key);
+
+    return JournalEntry(
+      id: map['id'] as String,
+      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+      date: map['date'] as String,
+      win: decryptedWin,
+      goal: decryptedGoal,
+      hueShift: (map['hue_shift'] as num).toDouble(),
+      moodValue: (map['mood_value'] as num).toDouble(),
+      tags: decryptedTags.split(',').where((t) => t.isNotEmpty).toList(),
+    );
+  }
 }
