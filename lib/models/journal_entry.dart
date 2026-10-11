@@ -23,6 +23,8 @@ class JournalEntry {
     this.tags = const [],
   });
 
+  // ── Local SQLite (unencrypted) ─────────────────────────────────────────────
+
   Map<String, dynamic> toMap() => {
         'id': id,
         'timestamp': timestamp.millisecondsSinceEpoch,
@@ -42,8 +44,52 @@ class JournalEntry {
         goal: map['goal'] as String,
         hueShift: (map['hue_shift'] as num).toDouble(),
         moodValue: (map['mood_value'] as num).toDouble(),
-        tags: (map['tags'] as String?)?.split(',').where((t) => t.isNotEmpty).toList() ?? const [],
+        tags: (map['tags'] as String?)
+                ?.split(',')
+                .where((t) => t.isNotEmpty)
+                .toList() ??
+            const [],
       );
+
+  // ── Local SQLite (encrypted text fields) ──────────────────────────────────
+
+  /// Encrypts text fields (date, win, goal, tags) for local SQLite storage.
+  ///
+  /// Numeric fields (timestamp, hue_shift, mood_value) are intentionally kept
+  /// as native types so SQLite can use them for `ORDER BY` without decryption.
+  Map<String, dynamic> toEncryptedLocalMap(enc.Key key) => {
+        'id': id,
+        'timestamp': timestamp.millisecondsSinceEpoch,
+        'date': EncryptionService.encrypt(date, key),
+        'win': EncryptionService.encrypt(win, key),
+        'goal': EncryptionService.encrypt(goal, key),
+        'hue_shift': hueShift,
+        'mood_value': moodValue,
+        'tags': EncryptionService.encrypt(tags.join(','), key),
+      };
+
+  /// Decrypts text fields read from local SQLite.
+  /// Falls back to legacy plaintext for unencrypted rows.
+  factory JournalEntry.fromEncryptedLocalMap(
+    Map<String, dynamic> map,
+    enc.Key key,
+  ) =>
+      JournalEntry(
+        id: map['id'] as String,
+        timestamp:
+            DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+        date: EncryptionService.decrypt(map['date'] as String? ?? '', key),
+        win: EncryptionService.decrypt(map['win'] as String? ?? '', key),
+        goal: EncryptionService.decrypt(map['goal'] as String? ?? '', key),
+        hueShift: (map['hue_shift'] as num).toDouble(),
+        moodValue: (map['mood_value'] as num).toDouble(),
+        tags: EncryptionService.decrypt(map['tags'] as String? ?? '', key)
+            .split(',')
+            .where((t) => t.isNotEmpty)
+            .toList(),
+      );
+
+  // ── Supabase (unencrypted — legacy) ───────────────────────────────────────
 
   Map<String, dynamic> toSupabaseMap(String userId) => {
         'id': id,
@@ -57,50 +103,74 @@ class JournalEntry {
         'tags': tags.join(','),
       };
 
-  factory JournalEntry.fromSupabaseMap(Map<String, dynamic> map) => JournalEntry(
+  factory JournalEntry.fromSupabaseMap(Map<String, dynamic> map) =>
+      JournalEntry(
         id: map['id'] as String,
-        timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
+        timestamp:
+            DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
         date: map['date'] as String,
         win: map['win'] as String,
         goal: map['goal'] as String,
         hueShift: (map['hue_shift'] as num).toDouble(),
         moodValue: (map['mood_value'] as num).toDouble(),
-        tags: (map['tags'] as String?)?.split(',').where((t) => t.isNotEmpty).toList() ?? const [],
+        tags: (map['tags'] as String?)
+                ?.split(',')
+                .where((t) => t.isNotEmpty)
+                .toList() ??
+            const [],
       );
 
-  /// Encrypts sensitive fields (win, goal, tags) before transmitting to Supabase.
+  // ── Supabase (fully encrypted) ─────────────────────────────────────────────
+
+  /// Encrypts ALL sensitive fields before uploading to Supabase.
+  ///
+  /// - Text fields (date, win, goal, tags): AES-256-CBC ciphertext strings.
+  /// - Numeric fields (timestamp, moodValue, hueShift): encrypted as strings
+  ///   so Supabase cannot infer mood patterns from raw numbers.
+  /// - `id` and `user_id` are left plaintext (required for DB lookups & RLS).
   Map<String, dynamic> toEncryptedSupabaseMap(String userId, enc.Key key) => {
         'id': id,
         'user_id': userId,
-        'timestamp': timestamp.millisecondsSinceEpoch,
-        'date': date,
+        'timestamp':
+            EncryptionService.encryptNum(timestamp.millisecondsSinceEpoch, key),
+        'date': EncryptionService.encrypt(date, key),
         'win': EncryptionService.encrypt(win, key),
         'goal': EncryptionService.encrypt(goal, key),
-        'hue_shift': hueShift,
-        'mood_value': moodValue,
+        'hue_shift': EncryptionService.encryptNum(hueShift, key),
+        'mood_value': EncryptionService.encryptNum(moodValue, key),
         'tags': EncryptionService.encrypt(tags.join(','), key),
       };
 
-  /// Decrypts sensitive fields received from Supabase.
-  /// Safely falls back to plaintext if the row was stored unencrypted.
-  factory JournalEntry.fromEncryptedSupabaseMap(Map<String, dynamic> map, enc.Key key) {
-    final rawWin = map['win'] as String? ?? '';
-    final rawGoal = map['goal'] as String? ?? '';
-    final rawTags = map['tags'] as String? ?? '';
-
-    final decryptedWin = EncryptionService.decrypt(rawWin, key);
-    final decryptedGoal = EncryptionService.decrypt(rawGoal, key);
-    final decryptedTags = EncryptionService.decrypt(rawTags, key);
-
+  /// Decrypts all sensitive fields received from Supabase.
+  ///
+  /// Handles backward compatibility for rows that were stored before full
+  /// encryption was enabled (any non-prefixed value is passed through as-is).
+  factory JournalEntry.fromEncryptedSupabaseMap(
+    Map<String, dynamic> map,
+    enc.Key key,
+  ) {
     return JournalEntry(
       id: map['id'] as String,
-      timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
-      date: map['date'] as String,
-      win: decryptedWin,
-      goal: decryptedGoal,
-      hueShift: (map['hue_shift'] as num).toDouble(),
-      moodValue: (map['mood_value'] as num).toDouble(),
-      tags: decryptedTags.split(',').where((t) => t.isNotEmpty).toList(),
+      timestamp: DateTime.fromMillisecondsSinceEpoch(
+        EncryptionService.decryptInt(
+          map['timestamp'],
+          key,
+          fallback: DateTime.now().millisecondsSinceEpoch,
+        ),
+      ),
+      date: EncryptionService.decrypt(map['date'] as String? ?? '', key),
+      win: EncryptionService.decrypt(map['win'] as String? ?? '', key),
+      goal: EncryptionService.decrypt(map['goal'] as String? ?? '', key),
+      hueShift: EncryptionService.decryptDouble(map['hue_shift'], key),
+      moodValue: EncryptionService.decryptDouble(
+        map['mood_value'],
+        key,
+        fallback: 0.5,
+      ),
+      tags: EncryptionService.decrypt(map['tags'] as String? ?? '', key)
+          .split(',')
+          .where((t) => t.isNotEmpty)
+          .toList(),
     );
   }
 }

@@ -5,31 +5,46 @@ import 'package:flutter/foundation.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Service responsible for client-side encryption of sensitive journal entry texts.
-/// Uses AES-256 (CBC with random IV) with key derivation from the user account identity.
-/// Prefix "enc:v1:" guarantees backward-compatibility with existing unencrypted entries.
+/// Service responsible for client-side encryption of all sensitive data.
+///
+/// ### Algorithm: AES-256-CBC
+/// - 256-bit key derived from userId + pepper via SHA-256 (domain-separated).
+/// - Each encrypt() call generates a fresh random 16-byte IV, so identical
+///   plaintexts always produce different ciphertexts.
+/// - Output format: `enc:v1:<base64(IV || ciphertext)>`
+///
+/// ### Backward compatibility
+/// Any field that does NOT start with `enc:v1:` is treated as legacy plaintext
+/// and returned as-is by decrypt(), ensuring old data keeps working.
 class EncryptionService {
   static const String prefix = 'enc:v1:';
 
-  // Retrieve pepper from .env (keeps secret isolated from repository & database)
-   static String? get _pepper =>
-      dotenv.env['ENCRYPTION_PEPPER'];
+  // Pepper from .env keeps the secret out of the repository and database.
+  static String? get _pepper => dotenv.env['ENCRYPTION_PEPPER'];
 
-  /// Derives a deterministic 256-bit AES Key from the user's Supabase User ID.
-  /// Works seamlessly across any device where the user logs into their account.
+  // ── Key Derivation ────────────────────────────────────────────────────────
+
+  /// Derives a deterministic 256-bit AES key from the user's Supabase User ID.
+  ///
+  /// A domain-separation context string (`innerscape-journal-v1`) is mixed in
+  /// so this key cannot be confused with keys derived for other purposes.
+  /// Works identically on any device where the same user is signed in.
   static enc.Key deriveKey(String userId) {
-    final bytes = utf8.encode('$userId:$_pepper');
+    // Domain-separated: context + userId + pepper
+    const context = 'innerscape-journal-v1';
+    final bytes = utf8.encode('$context:$userId:$_pepper');
     final hash = sha256.convert(bytes);
     return enc.Key(Uint8List.fromList(hash.bytes));
   }
 
-  /// Encrypts plaintext using AES-256-CBC with a randomly generated 16-byte IV.
-  /// Result is encoded as Base64 and prefixed with `enc:v1:`.
-  /// If the text is empty, returns empty string.
+  // ── String Encryption ─────────────────────────────────────────────────────
+
+  /// Encrypts [plainText] using AES-256-CBC with a random 16-byte IV.
+  /// Returns empty string for empty input; returns already-encrypted text as-is.
   static String encrypt(String plainText, enc.Key key) {
     if (plainText.isEmpty) return plainText;
-    
-    // Don't re-encrypt if already encrypted
+
+    // Idempotent: don't double-encrypt
     if (plainText.startsWith(prefix)) return plainText;
 
     try {
@@ -37,49 +52,75 @@ class EncryptionService {
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
       final encrypted = encrypter.encrypt(plainText, iv: iv);
 
-      // Payload contains: [16 bytes IV] + [encrypted bytes]
-      final combinedBytes = Uint8List(iv.bytes.length + encrypted.bytes.length);
-      combinedBytes.setRange(0, iv.bytes.length, iv.bytes);
-      combinedBytes.setRange(iv.bytes.length, combinedBytes.length, encrypted.bytes);
+      // Payload: [16 bytes IV] || [ciphertext bytes]
+      final combined = Uint8List(iv.bytes.length + encrypted.bytes.length);
+      combined.setRange(0, iv.bytes.length, iv.bytes);
+      combined.setRange(iv.bytes.length, combined.length, encrypted.bytes);
 
-      return '$prefix${base64Encode(combinedBytes)}';
+      return '$prefix${base64Encode(combined)}';
     } catch (e) {
       debugPrint('[EncryptionService] Encryption error: $e');
       return plainText;
     }
   }
 
-  /// Decrypts a ciphertext string starting with `enc:v1:`.
-  /// If the string is unencrypted (legacy plaintext), it safely returns the original text.
+  /// Decrypts a ciphertext prefixed with `enc:v1:`.
+  /// Falls back to returning the raw string for legacy plaintext values.
   static String decrypt(String cipherText, enc.Key key) {
     if (cipherText.isEmpty) return cipherText;
 
-    // Backward compatibility: If not starting with prefix, return plainText as-is
-    if (!cipherText.startsWith(prefix)) {
-      return cipherText;
-    }
+    // Legacy / unencrypted: pass through unchanged
+    if (!cipherText.startsWith(prefix)) return cipherText;
 
     try {
       final rawBase64 = cipherText.substring(prefix.length);
-      final combinedBytes = base64Decode(rawBase64);
+      final combined = base64Decode(rawBase64);
 
-      if (combinedBytes.length < 16) {
-        // Corrupted payload
+      if (combined.length < 16) {
+        debugPrint('[EncryptionService] Corrupted payload (too short)');
         return cipherText;
       }
 
-      final ivBytes = combinedBytes.sublist(0, 16);
-      final encryptedBytes = combinedBytes.sublist(16);
-
-      final iv = enc.IV(ivBytes);
+      final iv = enc.IV(combined.sublist(0, 16));
+      final encryptedBytes = combined.sublist(16);
       final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
-      final decrypted = encrypter.decrypt(enc.Encrypted(encryptedBytes), iv: iv);
-
-      return decrypted;
+      return encrypter.decrypt(enc.Encrypted(encryptedBytes), iv: iv);
     } catch (e) {
       debugPrint('[EncryptionService] Decryption error: $e');
-      // In case of error (e.g., tampered data or wrong key), return raw or placeholder
       return cipherText;
     }
   }
+
+  // ── Numeric Helpers ───────────────────────────────────────────────────────
+
+  /// Encrypts a numeric value by converting it to a string first.
+  /// Stored as TEXT in Supabase to keep numeric metadata opaque.
+  static String encryptNum(num value, enc.Key key) =>
+      encrypt(value.toString(), key);
+
+  /// Decrypts a field that was stored as an encrypted numeric string.
+  ///
+  /// Handles three cases for backward compatibility:
+  /// 1. `enc:v1:...` — decrypt and parse.
+  /// 2. A raw numeric string (e.g., `"0.85"`) — parse directly.
+  /// 3. A native num (SQLite returned an unencrypted number) — cast directly.
+  static double decryptDouble(
+    dynamic raw,
+    enc.Key key, {
+    double fallback = 0.0,
+  }) {
+    if (raw == null) return fallback;
+    if (raw is num) return raw.toDouble(); // backward compat: unencrypted numeric
+    final plain = decrypt(raw.toString(), key);
+    return double.tryParse(plain) ?? fallback;
+  }
+
+  /// Like [decryptDouble] but returns an [int].
+  static int decryptInt(dynamic raw, enc.Key key, {int fallback = 0}) {
+    if (raw == null) return fallback;
+    if (raw is num) return raw.toInt(); // backward compat: unencrypted numeric
+    final plain = decrypt(raw.toString(), key);
+    return int.tryParse(plain) ?? fallback;
+  }
 }
+

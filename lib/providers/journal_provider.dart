@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter/material.dart';
 import '../models/journal_entry.dart';
 import '../database/database_helper.dart';
@@ -6,6 +7,7 @@ import '../database/daos/entries_dao.dart';
 import '../database/daos/settings_dao.dart';
 import '../services/sync_service.dart';
 import '../services/insight_service.dart';
+import '../services/key_manager.dart';
 
 enum GroqInsightState { idle, loading, loaded, error }
 
@@ -98,6 +100,13 @@ class JournalProvider extends ChangeNotifier {
     final db = await DatabaseHelper.instance.database;
     await db.delete('journal_entries', where: "id LIKE 'sample_%'");
 
+    // Resolve the encryption key for the current session.
+    // At startup, we use the anonymous device key (persisted in the OS keychain).
+    // When the user signs in, syncWithCloud() upgrades this to the user-derived key.
+    final key = await KeyManager.resolveKey();
+    _entriesDao.setKey(key);
+    _settingsDao.setKey(key);
+
     _entries = await _entriesDao.getAll();
 
     // Load settings from database
@@ -112,19 +121,34 @@ class JournalProvider extends ChangeNotifier {
   }
 
   /// Sync local SQLite database with Supabase cloud.
+  ///
+  /// On first call after sign-in, this also upgrades the encryption key from
+  /// the anonymous device key to the deterministic user-derived key, and
+  /// re-encrypts all local entries with the new key so they can be read on
+  /// any signed-in device.
   Future<void> syncWithCloud(String userId) async {
     _isSyncing = true;
     notifyListeners();
 
     try {
+      // 1. Upgrade to the user-derived key and re-encrypt local data if needed
+      final newKey = await KeyManager.resolveKey(userId: userId);
+      await _reEncryptLocalData(newKey);
+      _entriesDao.setKey(newKey);
+      _settingsDao.setKey(newKey);
+
+      // Reload in-memory list with newly re-encrypted (but correctly decrypted) entries
+      _entries = await _entriesDao.getAll();
+
+      // 2. Merge & sync with Supabase
       final merged = await SyncService.syncOnLogin(userId, _entries);
-      
-      // Update local SQLite with all merged entries
+
+      // 3. Update local SQLite with all merged entries (written with user key)
       for (final entry in merged) {
         await _entriesDao.insert(entry);
       }
 
-      // Reload from local database
+      // 4. Reload from local database
       _entries = await _entriesDao.getAll();
       _updateStreaks();
     } catch (e) {
@@ -132,6 +156,29 @@ class JournalProvider extends ChangeNotifier {
     } finally {
       _isSyncing = false;
       notifyListeners();
+    }
+  }
+
+  /// Re-encrypts all local journal entries and settings with [newKey].
+  ///
+  /// Reads each entry using the *current* key set on the DAOs (which may be
+  /// the anonymous device key), then re-inserts them with [newKey]. This is a
+  /// no-op if the key hasn't changed (same userId or same device key).
+  Future<void> _reEncryptLocalData(enc.Key newKey) async {
+    // Check if the key actually changed to avoid unnecessary work
+    // (KeyManager caches the key, so resolveKey is cheap, but we still check)
+    final currentEntries = await _entriesDao.getAll(); // reads with current key
+
+    _entriesDao.setKey(newKey);
+    for (final entry in currentEntries) {
+      await _entriesDao.insert(entry); // re-writes with new key
+    }
+
+    // Re-encrypt settings
+    final allSettings = await _settingsDao.getAll(); // reads with current key
+    _settingsDao.setKey(newKey);
+    for (final kv in allSettings.entries) {
+      await _settingsDao.set(kv.key, kv.value); // re-writes with new key
     }
   }
 

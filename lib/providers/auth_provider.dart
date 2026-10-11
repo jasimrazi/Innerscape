@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
+import '../services/key_manager.dart';
+
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
@@ -77,6 +79,9 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(true);
     try {
       await SupabaseService.client.auth.signOut();
+      // Clear the encryption key from memory so it cannot be accessed
+      // after the user signs out, even if the app process lingers.
+      KeyManager.clearCache();
       _user = null;
     } catch (e) {
       _errorMessage = e.toString();
